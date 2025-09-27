@@ -1,0 +1,9 @@
+# Ignore node modules and build artifacts
+/node_modules
+/build
+/.env
+
+# Terraform files
+*.tfstate
+*.tfstate.backup
+.terraform*
