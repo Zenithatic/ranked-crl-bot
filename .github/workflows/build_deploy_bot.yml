@@ -6,13 +6,9 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'terraform/**'
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - 'terraform/**'
   workflow_run:
     workflows: ["Set up Terraform and Apply Infrastructure"]
     types:
@@ -58,3 +54,62 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Deploy to EC2 via SSM
+        run: |
+          # Get instance ID by name tag
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=ranked_crl_discord_bot_instance" "Name=instance-state-name,Values=running" \
+            --query "Reservations[*].Instances[*].InstanceId" \
+            --output text)
+          
+          if [ -z "$INSTANCE_ID" ]; then
+            echo "Error: No running instance found with name 'ranked_crl_discord_bot_instance'"
+            exit 1
+          fi
+          
+          echo "Deploying to instance: $INSTANCE_ID"
+          
+          # Deploy via SSM
+          aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy Discord bot container" \
+            --parameters commands="
+              echo 'Starting deployment...' &&
+              aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }} &&
+              docker pull ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest &&
+              docker stop discord-bot || true &&
+              docker rm discord-bot || true &&
+              docker run -d --name discord-bot --restart unless-stopped \
+                --log-driver=awslogs \
+                --log-opt awslogs-group=/aws/ec2/discord-bot \
+                --log-opt awslogs-stream=\${HOSTNAME} \
+                -e TOKEN='${{ secrets.TOKEN }}' \
+                -e GUILD_ID='${{ secrets.GUILD_ID }}' \
+                -e CLIENT_ID='${{ secrets.CLIENT_ID }}' \
+                -e API_TOKEN='${{ secrets.API_TOKEN }}' \
+                -e AWS_REGION='${{ env.AWS_REGION }}' \
+                063867200367.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest &&
+              echo 'Deployment completed successfully'
+            " \
+            --output text
