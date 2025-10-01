@@ -89,27 +89,18 @@ jobs:
           
           echo "Deploying to instance: $INSTANCE_ID"
           
-          # Deploy via SSM
+          # Deploy via SSM with proper JSON formatting
           aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy Discord bot container" \
-            --parameters commands="
-              echo 'Starting deployment...' &&
-              aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }} &&
-              docker pull ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest &&
-              docker stop discord-bot || true &&
-              docker rm discord-bot || true &&
-              docker run -d --name discord-bot --restart unless-stopped \
-                --log-driver=awslogs \
-                --log-opt awslogs-group=/aws/ec2/discord-bot \
-                --log-opt awslogs-stream=\${HOSTNAME} \
-                -e TOKEN='${{ secrets.TOKEN }}' \
-                -e GUILD_ID='${{ secrets.GUILD_ID }}' \
-                -e CLIENT_ID='${{ secrets.CLIENT_ID }}' \
-                -e API_TOKEN='${{ secrets.API_TOKEN }}' \
-                -e AWS_REGION='${{ env.AWS_REGION }}' \
-                063867200367.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest &&
-              echo 'Deployment completed successfully'
-            " \
+            --parameters 'commands=[
+              "echo Starting deployment...",
+              "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 063867200367.dkr.ecr.us-east-1.amazonaws.com",
+              "docker pull 063867200367.dkr.ecr.us-east-1.amazonaws.com/ranked-crl-discord-bot-repo:latest",
+              "docker stop discord-bot || true",
+              "docker rm discord-bot || true",
+              "docker run -d --name discord-bot --restart unless-stopped --log-driver=awslogs --log-opt awslogs-group=/aws/ec2/discord-bot --log-opt awslogs-stream=$(hostname) -e TOKEN=${{ secrets.TOKEN }} -e GUILD_ID=${{ secrets.GUILD_ID }} -e CLIENT_ID=${{ secrets.CLIENT_ID }} -e API_TOKEN=${{ secrets.API_TOKEN }} -e AWS_REGION=us-east-1 063867200367.dkr.ecr.us-east-1.amazonaws.com/ranked-crl-discord-bot-repo:latest",
+              "echo Deployment completed successfully"
+            ]' \
             --output text
