@@ -4,7 +4,9 @@ import {
   PutCommand,
   GetCommand,
   DeleteCommand,
+  QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
+import { Select } from "@aws-sdk/client-dynamodb";
 import { cards } from "./cards";
 
 const REGION = process.env.AWS_REGION || "us-east-1";
@@ -78,19 +80,4 @@ async function fetchRegistration(discordId: string) {
   }
 }
 
-async function removeRegistration(discordId: string) {
-  const command = {
-    TableName: REGISTRATION_TABLE_NAME,
-    Key: {
-      id: discordId,
-    },
-  };
-
-  try {
-    await ddbDocClient.send(new DeleteCommand(command));
-  } catch (error) {
-    console.error("Error deleting from DynamoDB:", error);
-  }
-}
-
-export { initiateRegistration, fetchRegistration, removeRegistration };
+export { initiateRegistration, fetchRegistration };

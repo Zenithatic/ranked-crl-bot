@@ -1,9 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { COOLDOWN_TIMES, CooldownManager } from "../../utils/cooldown";
-import {
-  fetchRegistration,
-  removeRegistration,
-} from "../../utils/registrationdb";
+import { fetchRegistration } from "../../utils/registrationdb";
 
 const registerCooldown = new CooldownManager(COOLDOWN_TIMES.FIVE_MINUTES);
 
@@ -114,9 +111,6 @@ module.exports = {
       } catch (error) {
         console.error("Error setting nickname:", error);
       }
-
-      // Remove deck in db after successful verification
-      await removeRegistration(userId);
 
       await interaction.reply({
         content: "✅ Verification successful! Your account is now verified.",
