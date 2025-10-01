@@ -70,47 +70,47 @@ resource "aws_route_table_association" "public_rta" {
 
 # NAT Gateway for Private Subnet (implement later)
 #resource "aws_eip" "nat_eip" {
-  #domain = "vpc"
-  
-  #depends_on = [aws_internet_gateway.ranked_crl_igw]
+#domain = "vpc"
 
-  #tags = {
-    #Name        = "ranked_crl_nat_eip"
-    #Environment = "production"
-  #}
+#depends_on = [aws_internet_gateway.ranked_crl_igw]
+
+#tags = {
+#Name        = "ranked_crl_nat_eip"
+#Environment = "production"
+#}
 #}
 
 #resource "aws_nat_gateway" "ranked_crl_nat" {
-  #allocation_id = aws_eip.nat_eip.id
-  #subnet_id     = aws_subnet.public_subnet.id
+#allocation_id = aws_eip.nat_eip.id
+#subnet_id     = aws_subnet.public_subnet.id
 
-  #tags = {
-    #Name        = "ranked_crl_nat_gateway"
-    #Environment = "production"
-  #}
+#tags = {
+#Name        = "ranked_crl_nat_gateway"
+#Environment = "production"
+#}
 
-  #depends_on = [aws_internet_gateway.ranked_crl_igw]
+#depends_on = [aws_internet_gateway.ranked_crl_igw]
 #}
 
 # Route Table for Private Subnet (implement later)
 #resource "aws_route_table" "private_rt" {
-  #vpc_id = aws_vpc.ranked_crl_vpc.id
+#vpc_id = aws_vpc.ranked_crl_vpc.id
 
-  #route {
-    #cidr_block     = "0.0.0.0/0"
-    #nat_gateway_id = aws_nat_gateway.ranked_crl_nat.id
-  #}
+#route {
+#cidr_block     = "0.0.0.0/0"
+#nat_gateway_id = aws_nat_gateway.ranked_crl_nat.id
+#}
 
-  #tags = {
-    #Name        = "ranked_crl_private_rt"
-    #Environment = "production"
-  #}
+#tags = {
+#Name        = "ranked_crl_private_rt"
+#Environment = "production"
+#}
 #}
 
 # Route Table Association for Private Subnet (implement later)
 #resource "aws_route_table_association" "private_rta" {
-  #subnet_id      = aws_subnet.private_subnet.id
-  #route_table_id = aws_route_table.private_rt.id
+#subnet_id      = aws_subnet.private_subnet.id
+#route_table_id = aws_route_table.private_rt.id
 #}
 
 # Security Group for Discord Bot EC2 Instance
@@ -150,12 +150,12 @@ resource "aws_security_group" "discord_bot_sg" {
   }
 }
 
-# VPC Endpoints for AWS Services
+# VPC Endpoints for AWS Services  
 resource "aws_vpc_endpoint" "dynamodb" {
   vpc_id       = aws_vpc.ranked_crl_vpc.id
   service_name = "com.amazonaws.us-east-1.dynamodb"
-  
-  route_table_ids = [aws_route_table.private_rt.id]
+
+  route_table_ids = [aws_route_table.public_rt.id]
 
   tags = {
     Name        = "ranked_crl_dynamodb_endpoint"
