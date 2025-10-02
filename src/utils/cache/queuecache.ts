@@ -19,6 +19,9 @@ enum ReturnMessage {
   NO_REGISTRATION = "No registration found. Please register first.",
   ADDED_TO_QUEUE = "You have been added to the queue.",
   MATCH_FOUND = "Match found! Preparing your game...",
+  REMOVED_FROM_QUEUE = "You have been removed from the queue.",
+  NOT_IN_QUEUE = "You are not in the queue.",
+  ALREADY_IN_GAME = "You are currently in a game. Please finish your game before queuing again.",
 }
 
 async function queuePlayer(discordId: string) {
@@ -45,8 +48,7 @@ async function queuePlayer(discordId: string) {
   if (userData.in_game) {
     return {
       success: false,
-      message:
-        "You are currently in a game. Please finish your game before queuing again.",
+      message: ReturnMessage.ALREADY_IN_GAME,
     };
   }
 
@@ -112,7 +114,7 @@ async function unqueuePlayer(discordId: string) {
   if (!userData) {
     return {
       success: false,
-      message: "No registration found. Please register first.",
+      message: ReturnMessage.NO_REGISTRATION,
     };
   }
 
@@ -122,9 +124,9 @@ async function unqueuePlayer(discordId: string) {
     JSON.stringify({ discordId, playerTag: userData.playerTag } as any)
   );
   if (removed) {
-    return { success: true, message: "You have been removed from the queue." };
+    return { success: true, message: ReturnMessage.REMOVED_FROM_QUEUE };
   } else {
-    return { success: false, message: "You are not in the queue." };
+    return { success: false, message: ReturnMessage.NOT_IN_QUEUE };
   }
 }
 

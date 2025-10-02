@@ -144,6 +144,15 @@ resource "aws_security_group" "discord_bot_sg" {
     description = "DNS"
   }
 
+  # Valkey/Redis outbound to private subnet
+  egress {
+    from_port   = 6379
+    to_port     = 6379
+    protocol    = "tcp"
+    cidr_blocks = [aws_subnet.public_subnet.cidr_block]
+    description = "Outbound to Valkey/Redis"
+  }
+
   tags = {
     Name        = "discord_bot_sg"
     Environment = "production"
