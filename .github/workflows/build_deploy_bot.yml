@@ -63,9 +63,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Build bot commands
+        run: |
+          npm ci
+          npm run build
+      
       - name: Run command registration script with node
         run: |
-          npm install
+          npm ci
           node ./deploy-commands.js
 
       - name: Configure AWS credentials
