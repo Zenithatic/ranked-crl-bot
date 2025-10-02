@@ -29,12 +29,6 @@ async function queuePlayer(discordId: string) {
   if (!redis) {
     throw new Error("Redis client not initialized");
   }
-  // Check if user is already in queue in sorted set
-  const isInQueue = await redis.zscore("playerQueueStandard", discordId);
-  if (isInQueue) {
-    return { success: false, message: ReturnMessage.ALREADY_IN_QUEUE };
-  }
-
   // Fetch user data from DynamoDB
   const userData = await getUserData(discordId);
   if (!userData || !userData.elo) {
@@ -42,6 +36,15 @@ async function queuePlayer(discordId: string) {
       success: false,
       message: ReturnMessage.NO_REGISTRATION,
     };
+  }
+
+  // Check if user is already in queue in sorted set
+  const isInQueue = await redis.zscore(
+    "playerQueueStandard",
+    JSON.stringify({ discordId, playerTag: userData.playerTag }) as any
+  );
+  if (isInQueue) {
+    return { success: false, message: ReturnMessage.ALREADY_IN_QUEUE };
   }
 
   // Check if user is already in a game
