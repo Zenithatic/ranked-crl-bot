@@ -6,7 +6,13 @@ dotenv.config();
 
 const P = "ranked-crl-valkey-rg.miaymu.ng.0001.use1.cache.amazonaws.com:6379";
 const MAX_ELO_DIFF = 200;
-const redis = new Redis(P);
+let redis: Redis | undefined = undefined;
+
+function initRedis() {
+  if (!redis) {
+    redis = new Redis(P);
+  }
+}
 
 enum ReturnMessage {
   ALREADY_IN_QUEUE = "You are already in the queue.",
@@ -16,6 +22,10 @@ enum ReturnMessage {
 }
 
 async function queuePlayer(discordId: string) {
+  initRedis();
+  if (!redis) {
+    throw new Error("Redis client not initialized");
+  }
   // Check if user is already in queue in sorted set
   const isInQueue = await redis.zscore("playerQueueStandard", discordId);
   if (isInQueue) {
@@ -92,6 +102,11 @@ async function queuePlayer(discordId: string) {
 }
 
 async function unqueuePlayer(discordId: string) {
+  initRedis();
+  if (!redis) {
+    throw new Error("Redis client not initialized");
+  }
+
   // Get player tag
   const userData = await getUserData(discordId);
   if (!userData) {
