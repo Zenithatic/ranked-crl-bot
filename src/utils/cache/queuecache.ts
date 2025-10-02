@@ -61,11 +61,12 @@ async function queuePlayer(discordId: string) {
   const minElo = userElo - MAX_ELO_DIFF;
   const maxElo = userElo + MAX_ELO_DIFF;
 
-  // Get all players in the ELO range
+  // Get all players in the ELO range with their scores
   const potentialMatches = await redis.zrangebyscore(
     "playerQueueStandard",
     minElo,
-    maxElo
+    maxElo,
+    "WITHSCORES"
   );
 
   // If found, return closest one
@@ -73,15 +74,21 @@ async function queuePlayer(discordId: string) {
     let closestMatch = null;
     let smallestDiff = Infinity;
 
-    for (const match of potentialMatches) {
-      const matchData = JSON.parse(match);
-      const matchElo = matchData.elo;
-      const eloDiff = Math.abs(userElo - matchElo);
+    // potentialMatches is [member1, score1, member2, score2, ...]
+    for (let i = 0; i < potentialMatches.length; i += 2) {
+      const memberData = JSON.parse(potentialMatches[i]);
+      const memberElo = parseInt(potentialMatches[i + 1]);
+      const eloDiff = Math.abs(userElo - memberElo);
 
       if (eloDiff < smallestDiff) {
         smallestDiff = eloDiff;
-        closestMatch = matchData;
+        closestMatch = memberData;
       }
+    }
+
+    // Add null check
+    if (!closestMatch) {
+      throw new Error("No valid match found despite having potential matches");
     }
 
     // Remove matched player from queue
