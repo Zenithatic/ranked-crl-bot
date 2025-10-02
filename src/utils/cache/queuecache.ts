@@ -97,6 +97,9 @@ async function queuePlayer(discordId: string) {
     // Update user data to reflect that they are now in a game
     await playerJoinGame(discordId, closestMatch.discordId);
 
+    // Update other user data as well
+    await playerJoinGame(closestMatch.discordId, discordId);
+
     return {
       success: true,
       match: closestMatch,
