@@ -1,0 +1,40 @@
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import dotenv from "dotenv";
+import { unqueuePlayer } from "../../utils/cache/queuecache";
+import { CooldownManager, COOLDOWN_TIMES } from "../../utils/classes/cooldown";
+import { commandCheck } from "../../utils/functions/commandcheck";
+dotenv.config();
+
+// Create a cooldown manager for this command with 1-minute cooldown
+const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName("unqueue")
+    .setDescription("Leave the ranked queue.")
+    .setDefaultMemberPermissions(null), // Allow all users to use this command
+  async execute(interaction: ChatInputCommandInteraction) {
+    // Check if command is used validly
+    const isValid = await commandCheck(interaction, cooldown, true);
+    if (!isValid) return;
+
+    // Attempt to unqueue the user
+    const userId = interaction.user.id;
+    const result = await unqueuePlayer(userId);
+
+    if (result.success) {
+      await interaction.reply({
+        content: `✅ ${result.message}`,
+        ephemeral: true,
+      });
+    } else {
+      await interaction.reply({
+        content: `❌ ${result.message}`,
+        ephemeral: true,
+      });
+    }
+
+    // Set cooldown after successful execution
+    cooldown.setCooldown(userId);
+  },
+};

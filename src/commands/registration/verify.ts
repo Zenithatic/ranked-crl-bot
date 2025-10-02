@@ -1,8 +1,9 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { COOLDOWN_TIMES, CooldownManager } from "../../utils/cooldown";
-import { fetchRegistration } from "../../utils/registrationdb";
+import { COOLDOWN_TIMES, CooldownManager } from "../../utils/classes/cooldown";
+import { fetchRegistration } from "../../utils/db/registrationdb";
+import { commandCheck } from "../../utils/functions/commandcheck";
 
-const registerCooldown = new CooldownManager(COOLDOWN_TIMES.FIVE_MINUTES);
+const cooldown = new CooldownManager(COOLDOWN_TIMES.FIVE_MINUTES);
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -10,33 +11,18 @@ module.exports = {
     .setDescription("Verifies your Clash Royale account by checking your deck.")
     .setDefaultMemberPermissions(null), // Allow all users to use this command
   async execute(interaction: ChatInputCommandInteraction) {
-    // Check if command is used in a guild (server)
-    if (!interaction.guild) {
-      await interaction.reply({
-        content: "❌ This command can only be used in a server, not in DMs.",
-        ephemeral: true,
-      });
-      return;
-    }
+    // Check if command is used validly
+    const isValid = await commandCheck(interaction, cooldown, false);
+    if (!isValid) return;
 
-    // Check cooldown
     const userId = interaction.user.id;
-    const cooldownCheck = registerCooldown.checkCooldown(userId);
-
-    if (cooldownCheck.isOnCooldown) {
-      await interaction.reply({
-        content: `⏰ You can use this command again in ${cooldownCheck.timeLeft} minute(s).`,
-        ephemeral: true,
-      });
-      return;
-    }
 
     // Check if user is already registered via discord roles
     const roles = interaction.member?.roles;
     if (roles && roles instanceof Object && "cache" in roles) {
       const roleCache = roles.cache;
       const isRegistered = roleCache.some((role) =>
-        ["Verified", "Admin", "Moderator"].includes(role.name)
+        ["Verified"].includes(role.name)
       );
       if (isRegistered) {
         await interaction.reply({
@@ -93,8 +79,8 @@ module.exports = {
 
     if (isMatch) {
       // Give user verified role and change their discord name to ign name + tag
-      const member = await interaction.guild.members.fetch(userId);
-      const verifiedRole = interaction.guild.roles.cache.find(
+      const member = await interaction.guild!.members.fetch(userId);
+      const verifiedRole = interaction.guild!.roles.cache.find(
         (role) => role.name === "Verified"
       );
 

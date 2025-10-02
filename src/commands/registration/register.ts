@@ -1,15 +1,13 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import dotenv from "dotenv";
-import {
-  initiateRegistration,
-  fetchRegistration,
-} from "../../utils/registrationdb";
-import { CooldownManager, COOLDOWN_TIMES } from "../../utils/cooldown";
+import { initiateRegistration } from "../../utils/db/registrationdb";
+import { CooldownManager, COOLDOWN_TIMES } from "../../utils/classes/cooldown";
+import { commandCheck } from "../../utils/functions/commandcheck";
 dotenv.config();
 const token = process.env.API_TOKEN;
 
 // Create a cooldown manager for this command with 5-minute cooldown
-const registerCooldown = new CooldownManager(COOLDOWN_TIMES.FIVE_MINUTES);
+const cooldown = new CooldownManager(COOLDOWN_TIMES.FIVE_MINUTES);
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -25,26 +23,11 @@ module.exports = {
     )
     .setDefaultMemberPermissions(null), // Allow all users to use this command
   async execute(interaction: ChatInputCommandInteraction) {
-    // Check if command is used in a guild (server)
-    if (!interaction.guild) {
-      await interaction.reply({
-        content: "❌ This command can only be used in a server, not in DMs.",
-        ephemeral: true,
-      });
-      return;
-    }
+    // Check if command is used validly
+    const isValid = await commandCheck(interaction, cooldown, false);
+    if (!isValid) return;
 
-    // Check cooldown
     const userId = interaction.user.id;
-    const cooldownCheck = registerCooldown.checkCooldown(userId);
-
-    if (cooldownCheck.isOnCooldown) {
-      await interaction.reply({
-        content: `⏰ You can use this command again in ${cooldownCheck.timeLeft} minute(s).`,
-        ephemeral: true,
-      });
-      return;
-    }
 
     // Check if user is already registered via discord roles
     const roles = interaction.member?.roles;
@@ -87,7 +70,8 @@ module.exports = {
       const cardsCopy = await initiateRegistration(playerTag, userId);
       if (cardsCopy === null) {
         await interaction.reply({
-          content: "Failed to generate a deck. Please try again later.",
+          content:
+            "Failed to generate a deck. Your discord or Clash Royale account may already be registered.",
           ephemeral: true,
         });
         return;
@@ -106,7 +90,7 @@ module.exports = {
       });
 
       // Set cooldown after successful execution
-      registerCooldown.setCooldown(userId);
+      cooldown.setCooldown(userId);
     } else {
       interaction.reply({
         content:
