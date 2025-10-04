@@ -39,8 +39,8 @@ module.exports = {
     if (
       !interaction.channel ||
       interaction.channel.type !== ChannelType.GuildText ||
-      !interaction.channel.topic ||
-      !interaction.channel.topic.startsWith("match-")
+      !interaction.channel.name ||
+      !interaction.channel.name.startsWith("match-")
     ) {
       await interaction.reply({
         content:
@@ -78,7 +78,7 @@ module.exports = {
     let player1wins = 0;
     let player2wins = 0;
     for (const battle of player1battles) {
-      if (battle.opponent.tag != player2data.playerTag) {
+      if (battle.opponent.tag != "#" + player2data.playerTag) {
         interaction.reply({
           content: `❌ One of the recent battles for <@${player1id}> is not against <@${player2id}>.`,
         });
