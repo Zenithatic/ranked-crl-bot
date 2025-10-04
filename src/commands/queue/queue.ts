@@ -1,6 +1,7 @@
 import {
   ChannelType,
   ChatInputCommandInteraction,
+  PermissionFlagsBits,
   SlashCommandBuilder,
 } from "discord.js";
 import dotenv from "dotenv";
@@ -49,16 +50,24 @@ module.exports = {
           type: ChannelType.GuildText,
           permissionOverwrites: [
             {
-              id: interaction.guild!.roles.everyone, // Deny everyone
-              deny: ["ViewChannel"],
+              id: interaction.guild!.roles.everyone.id, // Deny everyone
+              deny: [PermissionFlagsBits.ViewChannel],
             },
             {
-              id: userId, // Allow the command user
-              allow: ["ViewChannel", "SendMessages", "ReadMessageHistory"],
+              id: userId, // Allow player 1
+              allow: [
+                PermissionFlagsBits.ViewChannel,
+                PermissionFlagsBits.SendMessages,
+                PermissionFlagsBits.ReadMessageHistory,
+              ],
             },
             {
-              id: result.match.discordId, // Allow the matched user
-              allow: ["ViewChannel", "SendMessages", "ReadMessageHistory"],
+              id: result.match.discordId, // Allow player 2
+              allow: [
+                PermissionFlagsBits.ViewChannel,
+                PermissionFlagsBits.SendMessages,
+                PermissionFlagsBits.ReadMessageHistory,
+              ],
             },
           ],
         });
