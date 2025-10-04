@@ -78,14 +78,14 @@ module.exports = {
     let player1wins = 0;
     let player2wins = 0;
     for (const battle of player1battles) {
-      if (battle.opponent.tag != "#" + player2data.playerTag) {
+      if (battle.opponent[0].tag != "#" + player2data.playerTag) {
         interaction.reply({
           content: `❌ One of the recent battles for <@${player1id}> is not against <@${player2id}>.`,
         });
         return;
       }
 
-      if (battle.team.crowns > battle.opponent.crowns) {
+      if (battle.team[0].crowns > battle.opponent[0].crowns) {
         player1wins += 1;
         battles.push({
           winnerTag: player1data.playerTag,
@@ -105,10 +105,10 @@ module.exports = {
               ":" +
               battle.battleTime.slice(13)
           ),
-          player1cards: battle.team.cards.map((card: any) => card.name),
-          player2cards: battle.opponent.cards.map((card: any) => card.name),
+          player1cards: battle.team[0].cards.map((card: any) => card.name),
+          player2cards: battle.opponent[0].cards.map((card: any) => card.name),
         });
-      } else if (battle.team.crowns < battle.opponent.crowns) {
+      } else if (battle.team[0].crowns < battle.opponent[0].crowns) {
         player2wins += 1;
         battles.push({
           winnerTag: player2data.playerTag,
@@ -128,8 +128,8 @@ module.exports = {
               ":" +
               battle.battleTime.slice(13)
           ),
-          player1cards: battle.opponent.cards.map((card: any) => card.name),
-          player2cards: battle.team.cards.map((card: any) => card.name),
+          player1cards: battle.opponent[0].cards.map((card: any) => card.name),
+          player2cards: battle.team[0].cards.map((card: any) => card.name),
         });
       }
 
