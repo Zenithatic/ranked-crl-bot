@@ -48,30 +48,39 @@ module.exports = {
         const newchannel = await interaction.guild!.channels.create({
           name: `match-${userId}-${result.match.discordId}`,
           type: ChannelType.GuildText,
-          permissionOverwrites: [
-            {
-              id: interaction.guild!.roles.everyone.id, // Deny everyone
-              deny: [PermissionFlagsBits.ViewChannel],
-            },
-            {
-              id: userId, // Allow player 1
-              allow: [
-                PermissionFlagsBits.ViewChannel,
-                PermissionFlagsBits.SendMessages,
-                PermissionFlagsBits.ReadMessageHistory,
-              ],
-            },
-            {
-              id: result.match.discordId, // Allow player 2
-              allow: [
-                PermissionFlagsBits.ViewChannel,
-                PermissionFlagsBits.SendMessages,
-                PermissionFlagsBits.ReadMessageHistory,
-              ],
-            },
-          ],
+          parent: matchChannelCategory,
         });
-        await newchannel.setParent(matchChannelCategory);
+
+        // get Verified role
+        const verifiedRole = interaction.guild!.roles.cache.find(
+          (role) => role.name === "Verified"
+        );
+        await newchannel.permissionOverwrites.set([
+          {
+            id: interaction.guild!.roles.everyone.id, // Deny everyone
+            deny: [PermissionFlagsBits.ViewChannel],
+          },
+          {
+            id: verifiedRole!.id, // Deny Verified role
+            deny: [PermissionFlagsBits.ViewChannel],
+          },
+          {
+            id: userId, // Allow player 1
+            allow: [
+              PermissionFlagsBits.ViewChannel,
+              PermissionFlagsBits.SendMessages,
+              PermissionFlagsBits.ReadMessageHistory,
+            ],
+          },
+          {
+            id: result.match.discordId, // Allow player 2
+            allow: [
+              PermissionFlagsBits.ViewChannel,
+              PermissionFlagsBits.SendMessages,
+              PermissionFlagsBits.ReadMessageHistory,
+            ],
+          },
+        ]);
 
         // player tags and elos
         const playertag1 = player1data!.playerTag;
