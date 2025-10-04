@@ -1,7 +1,11 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { COOLDOWN_TIMES, CooldownManager } from "../../utils/classes/cooldown";
 import { fetchRegistration } from "../../utils/db/registrationdb";
-import { commandCheck } from "../../utils/functions/commandcheck";
+import {
+  commandCheck,
+  verifiedCheck,
+} from "../../utils/functions/commandchecks";
+import { getPlayer } from "../../utils/data/api";
 
 const cooldown = new CooldownManager(COOLDOWN_TIMES.FIVE_MINUTES);
 
@@ -12,26 +16,18 @@ module.exports = {
     .setDefaultMemberPermissions(null), // Allow all users to use this command
   async execute(interaction: ChatInputCommandInteraction) {
     // Check if command is used validly
-    const isValid = await commandCheck(interaction, cooldown, false);
-    if (!isValid) return;
+    if (!(await commandCheck(interaction, cooldown, false))) return;
 
     const userId = interaction.user.id;
 
-    // Check if user is already registered via discord roles
-    const roles = interaction.member?.roles;
-    if (roles && roles instanceof Object && "cache" in roles) {
-      const roleCache = roles.cache;
-      const isRegistered = roleCache.some((role) =>
-        ["Verified"].includes(role.name)
-      );
-      if (isRegistered) {
-        await interaction.reply({
-          content:
-            "❌ You are already registered. If you need to update your registration, please contact an admin.",
-          ephemeral: true,
-        });
-        return;
-      }
+    // Check if user is already verified via discord roles
+    if (await verifiedCheck(interaction)) {
+      await interaction.reply({
+        content:
+          "❌ You are already registered. If you need to update your registration, please contact an admin.",
+        ephemeral: true,
+      });
+      return;
     }
 
     // Attempt to fetch registration deck from DB
@@ -50,15 +46,7 @@ module.exports = {
 
     // Fetch player's current deck from Clash Royale API
     const token = process.env.API_TOKEN;
-    const response = await fetch(
-      "https://api.clashroyale.com/v1/players/%23" + playerTag,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      }
-    );
+    const response = await getPlayer(playerTag);
 
     if (!response.ok) {
       await interaction.reply({

@@ -2,9 +2,12 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import dotenv from "dotenv";
 import { initiateRegistration } from "../../utils/db/registrationdb";
 import { CooldownManager, COOLDOWN_TIMES } from "../../utils/classes/cooldown";
-import { commandCheck } from "../../utils/functions/commandcheck";
+import {
+  commandCheck,
+  verifiedCheck,
+} from "../../utils/functions/commandchecks";
+import { getPlayer } from "../../utils/data/api";
 dotenv.config();
-const token = process.env.API_TOKEN;
 
 // Create a cooldown manager for this command with 5-minute cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.FIVE_MINUTES);
@@ -24,26 +27,18 @@ module.exports = {
     .setDefaultMemberPermissions(null), // Allow all users to use this command
   async execute(interaction: ChatInputCommandInteraction) {
     // Check if command is used validly
-    const isValid = await commandCheck(interaction, cooldown, false);
-    if (!isValid) return;
+    if (!(await commandCheck(interaction, cooldown, false))) return;
 
     const userId = interaction.user.id;
 
-    // Check if user is already registered via discord roles
-    const roles = interaction.member?.roles;
-    if (roles && roles instanceof Object && "cache" in roles) {
-      const roleCache = roles.cache;
-      const isRegistered = roleCache.some((role) =>
-        ["Verified", "Admin", "Moderator"].includes(role.name)
-      );
-      if (isRegistered) {
-        await interaction.reply({
-          content:
-            "❌ You are already registered. If you need to update your registration, please contact an admin.",
-          ephemeral: true,
-        });
-        return;
-      }
+    // Check if user is already verified via discord roles
+    if (await verifiedCheck(interaction)) {
+      await interaction.reply({
+        content:
+          "❌ You are already registered. If you need to update your registration, please contact an admin.",
+        ephemeral: true,
+      });
+      return;
     }
 
     // Extract Player Tag
@@ -54,15 +49,7 @@ module.exports = {
     }
 
     // Validate with Clash Royale API
-    const response = await fetch(
-      "https://api.clashroyale.com/v1/players/%23" + playerTag,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      }
-    );
+    const response = await getPlayer(playerTag);
 
     // If valid player tag
     if (response.ok) {
@@ -92,6 +79,7 @@ module.exports = {
       // Set cooldown after successful execution
       cooldown.setCooldown(userId);
     } else {
+      // Error in response
       interaction.reply({
         content:
           "Failed to fetch player data. Please ensure your player tag is correct and try again.",

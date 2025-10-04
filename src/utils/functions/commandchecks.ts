@@ -49,4 +49,22 @@ async function commandCheck(
   // All checks passed
   return true;
 }
-export { commandCheck };
+
+async function verifiedCheck(interaction: ChatInputCommandInteraction) {
+  // Check if user is already verified via discord roles
+  const roles = interaction.member?.roles;
+  if (roles && roles instanceof Object && "cache" in roles) {
+    const roleCache = roles.cache;
+    const isRegistered = roleCache.some((role) =>
+      ["Verified"].includes(role.name)
+    );
+    if (isRegistered) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  return false;
+}
+export { commandCheck, verifiedCheck };

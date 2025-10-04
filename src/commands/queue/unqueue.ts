@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import dotenv from "dotenv";
 import { unqueuePlayer } from "../../utils/cache/queuecache";
 import { CooldownManager, COOLDOWN_TIMES } from "../../utils/classes/cooldown";
-import { commandCheck } from "../../utils/functions/commandcheck";
+import { commandCheck } from "../../utils/functions/commandchecks";
 dotenv.config();
 
 // Create a cooldown manager for this command with 1-minute cooldown
@@ -15,8 +15,7 @@ module.exports = {
     .setDefaultMemberPermissions(null), // Allow all users to use this command
   async execute(interaction: ChatInputCommandInteraction) {
     // Check if command is used validly
-    const isValid = await commandCheck(interaction, cooldown, true);
-    if (!isValid) return;
+    if (!(await commandCheck(interaction, cooldown, true))) return;
 
     // Attempt to unqueue the user
     const userId = interaction.user.id;
