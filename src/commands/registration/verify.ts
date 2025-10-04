@@ -1,5 +1,8 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { COOLDOWN_TIMES, CooldownManager } from "../../utils/classes/cooldown";
+import {
+  COOLDOWN_TIMES,
+  CooldownManager,
+} from "../../utils/classes_types/cooldown";
 import { fetchRegistration } from "../../utils/db/registrationdb";
 import {
   commandCheck,
@@ -32,9 +35,6 @@ module.exports = {
 
     // Attempt to fetch registration deck from DB
     const registration = await fetchRegistration(userId);
-    const deckList = registration?.deckList;
-    const playerTag = registration?.playerTag;
-
     if (registration === null) {
       await interaction.reply({
         content:
@@ -43,6 +43,9 @@ module.exports = {
       });
       return;
     }
+
+    const deckList = registration.deckList;
+    const playerTag = registration.playerTag;
 
     // Fetch player's current deck from Clash Royale API
     const token = process.env.API_TOKEN;

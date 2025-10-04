@@ -6,7 +6,10 @@ import {
 } from "discord.js";
 import dotenv from "dotenv";
 import { queuePlayer } from "../../utils/cache/queuecache";
-import { CooldownManager, COOLDOWN_TIMES } from "../../utils/classes/cooldown";
+import {
+  CooldownManager,
+  COOLDOWN_TIMES,
+} from "../../utils/classes_types/cooldown";
 import { commandCheck } from "../../utils/functions/commandchecks";
 import { getUserData } from "../../utils/db/registrationdb";
 dotenv.config();
@@ -44,11 +47,18 @@ module.exports = {
           return;
         }
 
+        // player tags and elos
+        const playertag1 = player1data.playerTag;
+        const playertag2 = player2data.playerTag;
+        const player1elo = player1data.elo;
+        const player2elo = player2data.elo;
+
         // create private channel only for the two players to discuss
         const newchannel = await interaction.guild!.channels.create({
           name: `match-${userId}-${result.match.discordId}`,
           type: ChannelType.GuildText,
           parent: matchChannelCategory,
+          topic: `time-${Date.now()}`,
         });
 
         // get Verified role
@@ -81,12 +91,6 @@ module.exports = {
             ],
           },
         ]);
-
-        // player tags and elos
-        const playertag1 = player1data!.playerTag;
-        const playertag2 = player2data!.playerTag;
-        const player1elo = player1data!.elo;
-        const player2elo = player2data!.elo;
 
         await newchannel.send({
           embeds: [

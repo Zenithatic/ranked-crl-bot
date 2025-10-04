@@ -7,6 +7,9 @@ import {
   QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { cards } from "../data/cards";
+import { PlayerData } from "../classes_types/PlayerData";
+import { BattleLog } from "../classes_types/BattleLog";
+import { EloChange } from "../classes_types/EloChange";
 
 const REGION = process.env.AWS_REGION || "us-east-1";
 const REGISTRATION_TABLE_NAME = "ranked_crl_registration_table";
@@ -100,7 +103,9 @@ async function initiateRegistration(playerTag: string, discordId: string) {
   return deckList;
 }
 
-async function fetchRegistration(discordId: string) {
+async function fetchRegistration(
+  discordId: string
+): Promise<{ deckList: any[]; playerTag: string } | null> {
   const command = {
     TableName: REGISTRATION_TABLE_NAME,
     Key: {
@@ -111,9 +116,10 @@ async function fetchRegistration(discordId: string) {
   try {
     const result = await ddbDocClient.send(new GetCommand(command));
     if (result.Item) {
+      const playerData = result.Item as PlayerData;
       return {
-        deckList: JSON.parse(result.Item.deckList),
-        playerTag: result.Item.playerTag,
+        deckList: JSON.parse(playerData.deckList),
+        playerTag: playerData.playerTag,
       }; // Return parsed deck list
     } else {
       return null; // No registration found
@@ -124,7 +130,7 @@ async function fetchRegistration(discordId: string) {
   }
 }
 
-async function getUserData(discordId: string) {
+async function getUserData(discordId: string): Promise<PlayerData | null> {
   const command = {
     TableName: REGISTRATION_TABLE_NAME,
     Key: {
@@ -135,7 +141,7 @@ async function getUserData(discordId: string) {
   try {
     const result = await ddbDocClient.send(new GetCommand(command));
     if (result.Item) {
-      return result.Item; // Return full user data
+      return result.Item as PlayerData; // Return full user data
     } else {
       return null; // No user found
     }
@@ -156,7 +162,7 @@ async function playerJoinGame(discordId: string, opponentId: string) {
 
 async function updateUserData(
   discordId: string,
-  updates: { [key: string]: any }
+  updates: Partial<PlayerData>
 ): Promise<boolean> {
   // Filter out undefined values
   const cleanUpdates = Object.fromEntries(
@@ -197,4 +203,67 @@ async function updateUserData(
   }
 }
 
-export { initiateRegistration, fetchRegistration, getUserData, playerJoinGame };
+async function persistBattleLog(
+  battleLog: BattleLog[],
+  eloChange: EloChange,
+  winnerId: string,
+  loserId: string
+) {
+  // Get old data
+  const winnerold: PlayerData | null = await getUserData(winnerId);
+  const loserold: PlayerData | null = await getUserData(loserId);
+  if (!winnerold || !loserold) {
+    console.error("Error retrieving old user data for battle log persistence");
+    return false;
+  }
+
+  // Update past 20 game history for players, adding battleLog to both
+  let winnerpast20 = JSON.parse(winnerold.past_20_games);
+  let loserpast20 = JSON.parse(loserold.past_20_games);
+  winnerpast20.unshift(battleLog);
+  if (winnerpast20.length > 20) {
+    winnerpast20 = winnerpast20.slice(0, 20);
+  }
+  loserpast20.unshift(battleLog);
+  if (loserpast20.length > 20) {
+    loserpast20 = loserpast20.slice(0, 20);
+  }
+
+  const updatewinnerres = await updateUserData(winnerId, {
+    current_opponent: undefined,
+    elo: winnerold.elo + eloChange.winnerChange,
+    in_game: false,
+    past_20_games: JSON.stringify(winnerpast20),
+    wins: winnerold.wins + 1,
+    win_streak: winnerold.win_streak + 1,
+  });
+
+  if (!updatewinnerres) {
+    console.error("Error updating winner data after game");
+    return false;
+  }
+
+  const updateloserres = await updateUserData(loserId, {
+    current_opponent: undefined,
+    elo: loserold.elo + eloChange.loserChange,
+    in_game: false,
+    past_20_games: JSON.stringify(loserpast20),
+    losses: loserold.losses + 1,
+    win_streak: 0,
+  });
+
+  if (!updateloserres) {
+    console.error("Error updating loser data after game");
+    return false;
+  }
+
+  return true;
+}
+
+export {
+  initiateRegistration,
+  fetchRegistration,
+  getUserData,
+  playerJoinGame,
+  persistBattleLog,
+};

@@ -1,7 +1,10 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import dotenv from "dotenv";
 import { initiateRegistration } from "../../utils/db/registrationdb";
-import { CooldownManager, COOLDOWN_TIMES } from "../../utils/classes/cooldown";
+import {
+  CooldownManager,
+  COOLDOWN_TIMES,
+} from "../../utils/classes_types/cooldown";
 import {
   commandCheck,
   verifiedCheck,

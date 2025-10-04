@@ -1,7 +1,10 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import dotenv from "dotenv";
 import { unqueuePlayer } from "../../utils/cache/queuecache";
-import { CooldownManager, COOLDOWN_TIMES } from "../../utils/classes/cooldown";
+import {
+  CooldownManager,
+  COOLDOWN_TIMES,
+} from "../../utils/classes_types/cooldown";
 import { commandCheck } from "../../utils/functions/commandchecks";
 dotenv.config();
 

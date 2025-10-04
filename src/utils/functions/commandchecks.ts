@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { CooldownManager } from "../classes/cooldown";
+import { CooldownManager } from "../classes_types/cooldown";
 
 async function commandCheck(
   interaction: ChatInputCommandInteraction,
