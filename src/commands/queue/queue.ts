@@ -93,6 +93,7 @@ module.exports = {
               color: 0x00ff00,
             },
           ],
+          content: `<@${userId}> <@${result.match.discordId}>`,
         });
 
         // respond
