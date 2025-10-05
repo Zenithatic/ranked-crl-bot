@@ -73,6 +73,9 @@ module.exports = {
       return;
     }
 
+    // Set cooldown after successful execution
+    cooldown.setCooldown(userId);
+
     const player1battles = await player1logs.json();
     let battles: BattleLog[] = [];
     let player1wins = 0;
@@ -152,7 +155,11 @@ module.exports = {
       let embed = new EmbedBuilder()
         .setColor(0x0099ff)
         .setTitle(
-          `Match Result: <@${player1id}> (${player1data.elo}) vs <@${player2id}> (${player2data.elo})`
+          `Match Result: ${
+            (await interaction.guild!.members.fetch(player1id)).displayName
+          } (${player1data.elo}) vs ${
+            (await interaction.guild!.members.fetch(player2id)).displayName
+          } (${player2data.elo})`
         )
         .setDescription(
           `<@${player1id}> defeats <@${player2id}> ${player1wins}-${player2wins}!\n\nELO Change: +${elochange.winnerChange} for <@${player1id}>, -${elochange.loserChange} for <@${player2id}>`
@@ -180,10 +187,14 @@ module.exports = {
       let embed = new EmbedBuilder()
         .setColor(0x0099ff)
         .setTitle(
-          `Match Result: <@${player1id}> (${player1data.elo}) vs <@${player2id}> (${player2data.elo})`
+          `Match Result: ${
+            (await interaction.guild!.members.fetch(player1id)).displayName
+          } (${player1data.elo}) vs ${
+            (await interaction.guild!.members.fetch(player2id)).displayName
+          } (${player2data.elo})`
         )
         .setDescription(
-          `<@${player2id}> defeats <@${player1id}> ${player2wins}-${player1wins}!\n\nELO Change: +${elochange.winnerChange} for <@${player2id}>, -${elochange.loserChange} for <@${player1id}>`
+          `\n🏆<@${player2id}> defeats <@${player1id}> ${player2wins}-${player1wins}!\n\n📊ELO Change: +${elochange.winnerChange} for <@${player2id}>, -${elochange.loserChange} for <@${player1id}>`
         )
         .addFields([] as { name: string; value: string; inline: boolean }[])
         .setTimestamp(new Date());
@@ -203,8 +214,5 @@ module.exports = {
     ) {
       await interaction.channel.delete();
     }
-
-    // Set cooldown after successful execution
-    cooldown.setCooldown(userId);
   },
 };

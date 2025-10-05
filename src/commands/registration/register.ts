@@ -69,7 +69,7 @@ module.exports = {
 
       // Reply with deck link
       await interaction.reply({
-        content: `Please switch your main TROPHY ROAD deck to the following deck for verification, <@${
+        content: `Please play a game (any game works - classic is the most convenient) with the following deck for verification, <@${
           interaction.user.id
         }>:\nhttps://link.clashroyale.com/en/?clashroyale://copyDeck?deck=${cardsCopy
           .map((card) => card)

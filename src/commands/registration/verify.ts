@@ -8,7 +8,7 @@ import {
   commandCheck,
   verifiedCheck,
 } from "../../utils/functions/commandchecks";
-import { getPlayer } from "../../utils/data/api";
+import { getBattleLogs, getPlayer } from "../../utils/data/api";
 
 const cooldown = new CooldownManager(COOLDOWN_TIMES.FIVE_MINUTES);
 
@@ -47,13 +47,12 @@ module.exports = {
     const deckList = registration.deckList;
     const playerTag = registration.playerTag;
 
-    // Fetch player's current deck from Clash Royale API
-    const token = process.env.API_TOKEN;
-    const response = await getPlayer(playerTag);
+    // Fetch player's battle log from Clash Royale API
+    const response = await getBattleLogs(playerTag);
 
     if (!response.ok) {
       await interaction.reply({
-        content: "❌ Failed to fetch your current deck from Clash Royale.",
+        content: "❌ Failed to fetch your battle log from Clash Royale.",
         ephemeral: true,
       });
       console.error("Error fetching player data:", response);
@@ -61,7 +60,7 @@ module.exports = {
     }
 
     const playerData = await response.json();
-    const currentDeck = playerData.currentDeck.map((card: any) => card.id);
+    const currentDeck = playerData[0].team[0].cards.map((card: any) => card.id);
 
     // Compare decks
     const isMatch = deckList.every((cardId: any) =>
