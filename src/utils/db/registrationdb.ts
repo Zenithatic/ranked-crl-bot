@@ -30,7 +30,7 @@ const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, translateConfig);
 async function initiateRegistration(playerTag: string, discordId: string) {
   // Check if discordId is already registered (fast check using primary key)
   const existingUser = await getUserData(discordId);
-  if (existingUser !== null) {
+  if (existingUser !== null && existingUser.verified === true) {
     console.warn(
       `Discord ID ${discordId} is already registered. Registration aborted.`
     );
