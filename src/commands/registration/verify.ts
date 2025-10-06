@@ -78,10 +78,7 @@ module.exports = {
         await member.roles.add(verifiedRole);
       }
 
-      const newNickname = `${playerData.name} (#${playerData.tag.replace(
-        "#",
-        ""
-      )})`;
+      const newNickname = `${playerData[0].team[0].name} (#${playerTag})`;
       try {
         await member.setNickname(newNickname);
       } catch (error) {
