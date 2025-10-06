@@ -69,13 +69,11 @@ module.exports = {
 
       // Reply with deck link
       await interaction.reply({
-        content: `Please play a game (any game works - classic is the most convenient) with the following deck for verification, <@${
+        content: `Please play a game (any 1v1 game works - classic is the most convenient) with the following deck for verification, <@${
           interaction.user.id
-        }>:\nhttps://link.clashroyale.com/en/?clashroyale://copyDeck?deck=${cardsCopy
+        }>:\nhttps://link.clashroyale.com/en?clashroyale://copyDeck?deck=${cardsCopy
           .map((card) => card)
-          .join(
-            ";"
-          )}&ev=117751&id=${playerTag}&l=Default_Event&slots=1;1;1;1;1;1;1;1&tt=159000000\n\nThe deck may take a long time to be detected for verification. Run /verify every 10 minutes until it is successful.`,
+          .join(";")}&slots=0;0;0;0;0;0;0;0&tt=159000000&l=Royals&id=2QRJ89LVV`,
         ephemeral: true,
       });
 

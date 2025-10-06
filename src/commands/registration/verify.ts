@@ -3,7 +3,7 @@ import {
   COOLDOWN_TIMES,
   CooldownManager,
 } from "../../utils/classes_types/cooldown";
-import { fetchRegistration } from "../../utils/db/registrationdb";
+import { getUserData } from "../../utils/db/registrationdb";
 import {
   commandCheck,
   verifiedCheck,
@@ -34,7 +34,7 @@ module.exports = {
     }
 
     // Attempt to fetch registration deck from DB
-    const registration = await fetchRegistration(userId);
+    const registration = await getUserData(userId);
     if (registration === null) {
       await interaction.reply({
         content:
@@ -44,7 +44,7 @@ module.exports = {
       return;
     }
 
-    const deckList = registration.deckList;
+    const deckList = JSON.parse(registration.deckList);
     const playerTag = registration.playerTag;
 
     // Fetch player's battle log from Clash Royale API

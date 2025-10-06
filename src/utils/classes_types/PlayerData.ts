@@ -13,6 +13,7 @@ type PlayerData = {
   user_created: number; // Timestamp when the user was created
   wins: number; // Total wins
   win_streak: number; // Current win streak
+  verified: boolean;
 };
 
 export { PlayerData };

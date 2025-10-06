@@ -29,7 +29,7 @@ const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, translateConfig);
 
 async function initiateRegistration(playerTag: string, discordId: string) {
   // Check if discordId is already registered (fast check using primary key)
-  const existingUser = await fetchRegistration(discordId);
+  const existingUser = await getUserData(discordId);
   if (existingUser !== null) {
     console.warn(
       `Discord ID ${discordId} is already registered. Registration aborted.`
@@ -45,14 +45,18 @@ async function initiateRegistration(playerTag: string, discordId: string) {
     ExpressionAttributeValues: {
       ":pt": playerTag,
     },
-    Select: "COUNT" as const,
+    Limit: 1,
   };
 
   try {
     const existingByTagResult = await ddbDocClient.send(
       new QueryCommand(existingByTagCommand)
     );
-    if (existingByTagResult.Count && existingByTagResult.Count > 0) {
+    if (
+      existingByTagResult.Items &&
+      existingByTagResult.Items.length > 0 &&
+      existingByTagResult.Items[0].verified === true
+    ) {
       console.warn(
         `Player tag ${playerTag} is already registered. Registration aborted.`
       );
@@ -88,6 +92,7 @@ async function initiateRegistration(playerTag: string, discordId: string) {
       in_game: false,
       current_opponent: null,
       game_start_time: null,
+      verified: false, // Start as unverified
     },
   };
 
@@ -101,33 +106,6 @@ async function initiateRegistration(playerTag: string, discordId: string) {
 
   // Return the deck list
   return deckList;
-}
-
-async function fetchRegistration(
-  discordId: string
-): Promise<{ deckList: any[]; playerTag: string } | null> {
-  const command = {
-    TableName: REGISTRATION_TABLE_NAME,
-    Key: {
-      id: discordId,
-    },
-  };
-
-  try {
-    const result = await ddbDocClient.send(new GetCommand(command));
-    if (result.Item) {
-      const playerData = result.Item as PlayerData;
-      return {
-        deckList: JSON.parse(playerData.deckList),
-        playerTag: playerData.playerTag,
-      }; // Return parsed deck list
-    } else {
-      return null; // No registration found
-    }
-  } catch (error) {
-    console.error("Error fetching from DynamoDB:", error);
-    return null;
-  }
 }
 
 async function getUserData(discordId: string): Promise<PlayerData | null> {
@@ -260,10 +238,4 @@ async function persistBattleLog(
   return true;
 }
 
-export {
-  initiateRegistration,
-  fetchRegistration,
-  getUserData,
-  playerJoinGame,
-  persistBattleLog,
-};
+export { initiateRegistration, getUserData, playerJoinGame, persistBattleLog };
