@@ -6,7 +6,7 @@ import {
 import { setFriendLink } from "../../utils/db/registrationdb";
 import { commandCheck } from "../../utils/functions/commandchecks";
 
-const cooldown = new CooldownManager(COOLDOWN_TIMES.FIVE_MINUTES);
+const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
 
 module.exports = {
   data: new SlashCommandBuilder()
