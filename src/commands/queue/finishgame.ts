@@ -77,6 +77,9 @@ module.exports = {
     let battles: BattleLog[] = [];
     let player1wins = 0;
     let player2wins = 0;
+    const maxBattlesToCheck = 3; // Check the last 3 battles
+    let battlesProcessed = 0;
+
     for (const battle of player1battles) {
       if (battle.opponent[0].tag != "#" + player2data.playerTag) {
         interaction.reply({
@@ -133,7 +136,10 @@ module.exports = {
         });
       }
 
-      if (player1wins >= 2 || player2wins >= 2) {
+      battlesProcessed++;
+
+      // Break after processing the required number of battles
+      if (battlesProcessed >= maxBattlesToCheck) {
         break;
       }
     }

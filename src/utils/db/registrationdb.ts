@@ -217,7 +217,7 @@ async function persistBattleLog(
   }
 
   const updatewinnerres = await updateUserData(winnerId, {
-    current_opponent: undefined,
+    current_opponent: "",
     elo: winnerold.elo + eloChange.winnerChange,
     in_game: false,
     past_20_games: JSON.stringify(winnerpast20),
