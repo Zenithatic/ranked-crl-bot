@@ -95,6 +95,10 @@ module.exports = {
           },
         ]);
 
+        // Get friendlinks and send to channel
+        const player1link = player1data.friend_link;
+        const player2link = player2data.friend_link;
+
         await newchannel.send({
           embeds: [
             {
@@ -105,11 +109,11 @@ module.exports = {
                 Do not play any other matches / gamemodes until this game is complete. \n
                 Once the best of 3 is complete, one of the players must run /finishgame.\n
                 Disconnects are considered complete games.\n
-                If you have any issues, please contact an admin.`,
+                If you have any issues, please contact an admin.\n\n `,
               color: 0x00ff00,
             },
           ],
-          content: `<@${userId}> <@${result.match.discordId}>`,
+          content: `<@${userId}>'s friend link: ${player1link}\n\n<@${result.match.discordId}>'s friend link: ${player2link}\n\n`,
         });
 
         // respond

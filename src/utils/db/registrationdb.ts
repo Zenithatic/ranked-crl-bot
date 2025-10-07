@@ -92,7 +92,8 @@ async function initiateRegistration(playerTag: string, discordId: string) {
       in_game: false,
       current_opponent: null,
       game_start_time: null,
-      verified: false, // Start as unverified
+      verified: false,
+      friend_link: "",
     },
   };
 
