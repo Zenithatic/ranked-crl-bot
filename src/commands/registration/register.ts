@@ -51,6 +51,9 @@ module.exports = {
       return;
     }
 
+    // Set cooldown after successful execution
+    cooldown.setCooldown(userId);
+
     // Validate with Clash Royale API
     const response = await getPlayer(playerTag);
 
@@ -76,9 +79,6 @@ module.exports = {
           .join(";")}&slots=0;0;0;0;0;0;0;0&tt=159000000&l=Royals&id=2QRJ89LVV`,
         ephemeral: true,
       });
-
-      // Set cooldown after successful execution
-      cooldown.setCooldown(userId);
     } else {
       // Error in response
       interaction.reply({

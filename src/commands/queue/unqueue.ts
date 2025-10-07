@@ -19,9 +19,12 @@ module.exports = {
   async execute(interaction: ChatInputCommandInteraction) {
     // Check if command is used validly
     if (!(await commandCheck(interaction, cooldown, true))) return;
+    const userId = interaction.user.id;
+
+    // Set cooldown
+    cooldown.setCooldown(userId);
 
     // Attempt to unqueue the user
-    const userId = interaction.user.id;
     const result = await unqueuePlayer(userId);
 
     if (result.success) {
@@ -35,8 +38,5 @@ module.exports = {
         ephemeral: true,
       });
     }
-
-    // Set cooldown after successful execution
-    cooldown.setCooldown(userId);
   },
 };

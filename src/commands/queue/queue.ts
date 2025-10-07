@@ -28,8 +28,11 @@ module.exports = {
     // Check if command is used validly
     if (!(await commandCheck(interaction, cooldown, true))) return;
 
-    // Attempt to queue the user
+    // Set cooldown after successful execution
     const userId = interaction.user.id;
+    cooldown.setCooldown(userId);
+
+    // Attempt to queue the user
     const result = await queuePlayer(userId);
 
     if (result.success) {
@@ -126,8 +129,5 @@ module.exports = {
         ephemeral: true,
       });
     }
-
-    // Set cooldown after successful execution
-    cooldown.setCooldown(userId);
   },
 };

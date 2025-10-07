@@ -8,7 +8,7 @@ import {
   commandCheck,
   verifiedCheck,
 } from "../../utils/functions/commandchecks";
-import { getBattleLogs, getPlayer } from "../../utils/data/api";
+import { getBattleLogs } from "../../utils/data/api";
 
 const cooldown = new CooldownManager(COOLDOWN_TIMES.FIVE_MINUTES);
 
@@ -32,6 +32,9 @@ module.exports = {
       });
       return;
     }
+
+    // Set cooldown
+    cooldown.setCooldown(userId);
 
     // Attempt to fetch registration deck from DB
     const registration = await getUserData(userId);

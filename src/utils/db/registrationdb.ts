@@ -138,6 +138,14 @@ async function playerJoinGame(discordId: string, opponentId: string) {
   });
 }
 
+async function setFriendLink(discordId: string, friendLink: string) {
+  const res = await updateUserData(discordId, {
+    friend_link: friendLink,
+  });
+
+  return res;
+}
+
 async function updateUserData(
   discordId: string,
   updates: Partial<PlayerData>
@@ -238,4 +246,10 @@ async function persistBattleLog(
   return true;
 }
 
-export { initiateRegistration, getUserData, playerJoinGame, persistBattleLog };
+export {
+  initiateRegistration,
+  getUserData,
+  playerJoinGame,
+  persistBattleLog,
+  setFriendLink,
+};

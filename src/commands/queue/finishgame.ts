@@ -2,13 +2,10 @@ import {
   ChannelType,
   ChatInputCommandInteraction,
   EmbedBuilder,
-  PermissionFlagsBits,
   SlashCommandBuilder,
-  TextBasedChannel,
   TextChannel,
 } from "discord.js";
 import dotenv from "dotenv";
-import { queuePlayer } from "../../utils/cache/queuecache";
 import {
   CooldownManager,
   COOLDOWN_TIMES,
