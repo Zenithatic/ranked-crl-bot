@@ -20,7 +20,6 @@ dotenv.config();
 // Create a cooldown manager for this command with 1-minute cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
 
-const matchChannelCategory = "1421362444382507049";
 const battleLogChannel = "1424129349019242597";
 
 module.exports = {

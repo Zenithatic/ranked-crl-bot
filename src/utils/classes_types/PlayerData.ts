@@ -3,7 +3,7 @@ type PlayerData = {
   current_opponent: string; // Discord ID of current opponent
   deckList: string; // JSON stringified array of card IDs
   elo: number; // Player's Elo rating
-  game_start_time: number; // Timestamp when the game started
+  game_start_time: number; // Timestamp when the current game started
   in_game: boolean; // Whether the player is currently in a game
   losses: number; // Total losses
   past_20_games: string; // JSON stringified array of last 20 game results

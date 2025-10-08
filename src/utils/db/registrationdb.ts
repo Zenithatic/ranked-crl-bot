@@ -247,10 +247,21 @@ async function persistBattleLog(
   return true;
 }
 
+async function terminateGame(discordId: string) {
+  // Update user data to reflect that they are no longer in a game
+  const res = await updateUserData(discordId, {
+    in_game: false,
+    current_opponent: "",
+  });
+
+  return res;
+}
+
 export {
   initiateRegistration,
   getUserData,
   playerJoinGame,
   persistBattleLog,
   setFriendLink,
+  terminateGame,
 };
