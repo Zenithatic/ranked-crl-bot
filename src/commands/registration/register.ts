@@ -76,7 +76,9 @@ module.exports = {
           interaction.user.id
         }>:\nhttps://link.clashroyale.com/en?clashroyale://copyDeck?deck=${cardsCopy
           .map((card) => card)
-          .join(";")}&slots=0;0;0;0;0;0;0;0&tt=159000000&l=Royals&id=2QRJ89LVV`,
+          .join(
+            ";"
+          )}&slots=0;0;0;0;0;0;0;0&tt=159000000&l=Royals&id=2QRJ89LVV\n\nAfter, please run /verify to complete the verification process. `,
         ephemeral: true,
       });
     } else {
