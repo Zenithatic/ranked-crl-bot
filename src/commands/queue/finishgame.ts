@@ -15,6 +15,7 @@ import { getUserData, persistBattleLog } from "../../utils/db/registrationdb";
 import { getBattleLogs } from "../../utils/data/api";
 import { calculateEloChange } from "../../utils/functions/elocalc";
 import { BattleLog } from "../../utils/classes_types/BattleLog";
+import { PlayerData } from "../../utils/classes_types/PlayerData";
 dotenv.config();
 
 // Create a cooldown manager for this command with 1-minute cooldown
@@ -76,14 +77,19 @@ module.exports = {
     let battles: BattleLog[] = [];
     let player1wins = 0;
     let player2wins = 0;
-    const maxBattlesToCheck = 3; // Check the last 3 battles
-    let battlesProcessed = 0;
+    const maxBattlesToCheck = 3; // Best of 3
+    let validBattlesProcessed = 0;
 
     // Track used cards for duplicate detection
     const player1UsedCards: string[] = [];
     const player2UsedCards: string[] = [];
 
     for (const battle of player1battles) {
+      // Break after processing the required number of battles
+      if (validBattlesProcessed >= maxBattlesToCheck) {
+        break;
+      }
+
       if (battle.opponent[0].tag != "#" + player2data.playerTag) {
         interaction.reply({
           content: `❌ One of the recent battles for <@${player1id}> is not against <@${player2id}>.`,
@@ -92,122 +98,41 @@ module.exports = {
       }
 
       if (battle.team[0].crowns > battle.opponent[0].crowns) {
-        player1wins += 1;
+        // Check if winner used duplicate cards
         const player1Cards = battle.team[0].cards.map((card: any) => card.name);
+        let player1duped = false;
+        for (const card of player1Cards) {
+          if (player1UsedCards.includes(card)) {
+            // Player 1 uses dupe, win does not count, go to next battle
+            player1duped = true;
+            break;
+          }
+        }
+        if (player1duped) {
+          continue;
+        }
+
+        // Winner did not dupe, win counts
+        player1wins += 1;
+        validBattlesProcessed += 1;
+
+        // Check if loser used duplicate cards
         const player2Cards = battle.opponent[0].cards.map(
           (card: any) => card.name
         );
-
-        // Check for duplicate cards
-        for (const card of player1Cards) {
-          if (player1UsedCards.includes(card)) {
-            // Player 1 used duplicate card, Player 2 wins by disqualification
-            const elochange = calculateEloChange(
-              player2data.elo,
-              player1data.elo
-            );
-            await interaction.reply({
-              content: `❌ <@${player1id}> used duplicate cards! <@${player2id}> wins by disqualification.`,
-            });
-
-            const blogchan = (await interaction.guild!.channels.fetch(
-              battleLogChannel
-            )) as TextChannel;
-            const embed = new EmbedBuilder()
-              .setColor(0xff0000)
-              .setTitle(`Match Result: Disqualification - Duplicate Cards`)
-              .setDescription(
-                `<@${player2id}> wins by disqualification!\n<@${player1id}> used duplicate cards.\n\nELO Change: +${elochange.winnerChange} for <@${player2id}>, -${elochange.loserChange} for <@${player1id}>`
-              )
-              .setTimestamp(new Date());
-
-            await blogchan.send({
-              content: `<@${player1id}> <@${player2id}>`,
-              embeds: [embed],
-            });
-
-            const forfeitBattle: BattleLog = {
-              winnerTag: player2data.playerTag,
-              loserTag: player1data.playerTag,
-              winnerId: player2id,
-              loserId: player1id,
-              battleTime: new Date(),
-              player1cards: player1Cards,
-              player2cards: player2Cards,
-            };
-            await persistBattleLog(
-              [forfeitBattle],
-              elochange,
-              player2id,
-              player1id
-            );
-
-            if (
-              interaction.channel &&
-              interaction.channel.type === ChannelType.GuildText
-            ) {
-              await interaction.channel.delete();
-            }
-            return;
-          }
-        }
-
+        let player2duped = false;
         for (const card of player2Cards) {
           if (player2UsedCards.includes(card)) {
-            // Player 2 used duplicate card, Player 1 wins by disqualification
-            const elochange = calculateEloChange(
-              player1data.elo,
-              player2data.elo
-            );
-            await interaction.reply({
-              content: `❌ <@${player2id}> used duplicate cards! <@${player1id}> wins by disqualification.`,
-            });
-
-            const blogchan = (await interaction.guild!.channels.fetch(
-              battleLogChannel
-            )) as TextChannel;
-            const embed = new EmbedBuilder()
-              .setColor(0xff0000)
-              .setTitle(`Match Result: Disqualification - Duplicate Cards`)
-              .setDescription(
-                `<@${player1id}> wins by disqualification!\n<@${player2id}> used duplicate cards.\n\nELO Change: +${elochange.winnerChange} for <@${player1id}>, -${elochange.loserChange} for <@${player2id}>`
-              )
-              .setTimestamp(new Date());
-
-            await blogchan.send({
-              content: `<@${player1id}> <@${player2id}>`,
-              embeds: [embed],
-            });
-
-            const forfeitBattle: BattleLog = {
-              winnerTag: player1data.playerTag,
-              loserTag: player2data.playerTag,
-              winnerId: player1id,
-              loserId: player2id,
-              battleTime: new Date(),
-              player1cards: player1Cards,
-              player2cards: player2Cards,
-            };
-            await persistBattleLog(
-              [forfeitBattle],
-              elochange,
-              player1id,
-              player2id
-            );
-
-            if (
-              interaction.channel &&
-              interaction.channel.type === ChannelType.GuildText
-            ) {
-              await interaction.channel.delete();
-            }
-            return;
+            // Player 2 uses dupe but still loses, win counts
+            player2duped = true;
+            break;
           }
         }
-
-        // No duplicates, add cards to used arrays
-        player1UsedCards.push(...player1Cards);
-        player2UsedCards.push(...player2Cards);
+        if (!player2duped) {
+          // add cards to used arrays
+          player1UsedCards.push(...player1Cards);
+          player2UsedCards.push(...player2Cards);
+        }
 
         battles.push({
           winnerTag: player1data.playerTag,
@@ -231,122 +156,41 @@ module.exports = {
           player2cards: player2Cards,
         });
       } else if (battle.team[0].crowns < battle.opponent[0].crowns) {
-        player2wins += 1;
-        const player1Cards = battle.opponent[0].cards.map(
+        // Check if winner used duplicate cards
+        const player2Cards = battle.opponent[0].cards.map(
           (card: any) => card.name
         );
-        const player2Cards = battle.team[0].cards.map((card: any) => card.name);
-
-        // Check for duplicate cards
-        for (const card of player1Cards) {
-          if (player1UsedCards.includes(card)) {
-            // Player 1 used duplicate card, Player 2 wins by disqualification
-            const elochange = calculateEloChange(
-              player2data.elo,
-              player1data.elo
-            );
-            await interaction.reply({
-              content: `❌ <@${player1id}> used duplicate cards! <@${player2id}> wins by disqualification.`,
-            });
-
-            const blogchan = (await interaction.guild!.channels.fetch(
-              battleLogChannel
-            )) as TextChannel;
-            const embed = new EmbedBuilder()
-              .setColor(0xff0000)
-              .setTitle(`Match Result: Disqualification - Duplicate Cards`)
-              .setDescription(
-                `<@${player2id}> wins by disqualification!\n<@${player1id}> used duplicate cards.\n\nELO Change: +${elochange.winnerChange} for <@${player2id}>, -${elochange.loserChange} for <@${player1id}>`
-              )
-              .setTimestamp(new Date());
-
-            await blogchan.send({
-              content: `<@${player1id}> <@${player2id}>`,
-              embeds: [embed],
-            });
-
-            const forfeitBattle: BattleLog = {
-              winnerTag: player2data.playerTag,
-              loserTag: player1data.playerTag,
-              winnerId: player2id,
-              loserId: player1id,
-              battleTime: new Date(),
-              player1cards: player1Cards,
-              player2cards: player2Cards,
-            };
-            await persistBattleLog(
-              [forfeitBattle],
-              elochange,
-              player2id,
-              player1id
-            );
-
-            if (
-              interaction.channel &&
-              interaction.channel.type === ChannelType.GuildText
-            ) {
-              await interaction.channel.delete();
-            }
-            return;
-          }
-        }
-
+        let player2duped = false;
         for (const card of player2Cards) {
           if (player2UsedCards.includes(card)) {
-            // Player 2 used duplicate card, Player 1 wins by disqualification
-            const elochange = calculateEloChange(
-              player1data.elo,
-              player2data.elo
-            );
-            await interaction.reply({
-              content: `❌ <@${player2id}> used duplicate cards! <@${player1id}> wins by disqualification.`,
-            });
-
-            const blogchan = (await interaction.guild!.channels.fetch(
-              battleLogChannel
-            )) as TextChannel;
-            const embed = new EmbedBuilder()
-              .setColor(0xff0000)
-              .setTitle(`Match Result: Disqualification - Duplicate Cards`)
-              .setDescription(
-                `<@${player1id}> wins by disqualification!\n<@${player2id}> used duplicate cards.\n\nELO Change: +${elochange.winnerChange} for <@${player1id}>, -${elochange.loserChange} for <@${player2id}>`
-              )
-              .setTimestamp(new Date());
-
-            await blogchan.send({
-              content: `<@${player1id}> <@${player2id}>`,
-              embeds: [embed],
-            });
-
-            const forfeitBattle: BattleLog = {
-              winnerTag: player1data.playerTag,
-              loserTag: player2data.playerTag,
-              winnerId: player1id,
-              loserId: player2id,
-              battleTime: new Date(),
-              player1cards: player1Cards,
-              player2cards: player2Cards,
-            };
-            await persistBattleLog(
-              [forfeitBattle],
-              elochange,
-              player1id,
-              player2id
-            );
-
-            if (
-              interaction.channel &&
-              interaction.channel.type === ChannelType.GuildText
-            ) {
-              await interaction.channel.delete();
-            }
-            return;
+            // Player 2 uses dupe, win does not count, go to next battle
+            player2duped = true;
+            break;
           }
         }
+        if (player2duped) {
+          continue;
+        }
 
-        // No duplicates, add cards to used arrays
-        player1UsedCards.push(...player1Cards);
-        player2UsedCards.push(...player2Cards);
+        // Winner did not dupe, win counts
+        player2wins += 1;
+        validBattlesProcessed += 1;
+
+        // Check if loser used duplicate cards
+        const player1Cards = battle.team[0].cards.map((card: any) => card.name);
+        let player1duped = false;
+        for (const card of player1Cards) {
+          if (player1UsedCards.includes(card)) {
+            // Player 1 uses dupe but still loses, win counts
+            player1duped = true;
+            break;
+          }
+        }
+        if (!player1duped) {
+          // add cards to used arrays
+          player1UsedCards.push(...player1Cards);
+          player2UsedCards.push(...player2Cards);
+        }
 
         battles.push({
           winnerTag: player2data.playerTag,
@@ -370,87 +214,74 @@ module.exports = {
           player2cards: player2Cards,
         });
       }
-
-      battlesProcessed++;
-
-      // Break after processing the required number of battles
-      if (battlesProcessed >= maxBattlesToCheck) {
-        break;
-      }
     }
 
     if (player1wins > player2wins) {
-      const elochange = calculateEloChange(player1data.elo, player2data.elo);
-      await interaction.reply({
-        content: `🏆 <@${player1id}> wins the match! (+${elochange.winnerChange} ELO) <@${player2id}> (-${elochange.loserChange} ELO)`,
-      });
-
-      // output to battle log channel
-      const blogchan = (await interaction.guild!.channels.fetch(
-        battleLogChannel
-      )) as TextChannel;
-
-      let embed = new EmbedBuilder()
-        .setColor(0x0099ff)
-        .setTitle(
-          `Match Result: ${
-            (await interaction.guild!.members.fetch(player1id)).displayName
-          } (${player1data.elo}) vs ${
-            (await interaction.guild!.members.fetch(player2id)).displayName
-          } (${player2data.elo})`
-        )
-        .setDescription(
-          `<@${player1id}> defeats <@${player2id}> ${player1wins}-${player2wins}!\n\nELO Change: +${elochange.winnerChange} for <@${player1id}>, -${elochange.loserChange} for <@${player2id}>`
-        )
-        .addFields([] as { name: string; value: string; inline: boolean }[])
-        .setTimestamp(new Date());
-
-      await blogchan.send({
-        content: `<@${player1id}> <@${player2id}>`,
-        embeds: [embed],
-      });
-      // update elo and wins/losses
-      await persistBattleLog(battles, elochange, player1id, player2id);
+      await handleGameEnd(
+        player1data,
+        player2data,
+        player1id,
+        player2id,
+        battles,
+        interaction
+      );
     } else if (player2wins > player1wins) {
-      const elochange = calculateEloChange(player2data.elo, player1data.elo);
-      await interaction.reply({
-        content: `🏆 <@${player2id}> wins the match! (+${elochange.winnerChange} ELO) <@${player1id}> (-${elochange.loserChange} ELO)`,
-      });
-
-      // output to battle log channel
-      const blogchan = (await interaction.guild!.channels.fetch(
-        battleLogChannel
-      )) as TextChannel;
-
-      let embed = new EmbedBuilder()
-        .setColor(0x0099ff)
-        .setTitle(
-          `Match Result: ${
-            (await interaction.guild!.members.fetch(player1id)).displayName
-          } (${player1data.elo}) vs ${
-            (await interaction.guild!.members.fetch(player2id)).displayName
-          } (${player2data.elo})`
-        )
-        .setDescription(
-          `\n🏆<@${player2id}> defeats <@${player1id}> ${player2wins}-${player1wins}!\n\n📊ELO Change: +${elochange.winnerChange} for <@${player2id}>, -${elochange.loserChange} for <@${player1id}>`
-        )
-        .addFields([] as { name: string; value: string; inline: boolean }[])
-        .setTimestamp(new Date());
-
-      await blogchan.send({
-        content: `<@${player1id}> <@${player2id}>`,
-        embeds: [embed],
-      });
-      // update elo and wins/losses
-      await persistBattleLog(battles, elochange, player2id, player1id);
-    }
-
-    // Delete match channel
-    if (
-      interaction.channel &&
-      interaction.channel.type === ChannelType.GuildText
-    ) {
-      await interaction.channel.delete();
+      await handleGameEnd(
+        player2data,
+        player1data,
+        player2id,
+        player1id,
+        battles,
+        interaction
+      );
     }
   },
 };
+
+async function handleGameEnd(
+  winnerdata: PlayerData,
+  loserdata: PlayerData,
+  winnerId: string,
+  loserId: string,
+  battles: BattleLog[],
+  interaction: ChatInputCommandInteraction
+) {
+  const elocalc = calculateEloChange(winnerdata.elo, loserdata.elo);
+
+  await interaction.reply({
+    content: `🏆 <@${winnerId}> wins the match! (+${elocalc.winnerChange} ELO) <@${loserId}> (-${elocalc.loserChange} ELO)`,
+  });
+
+  const blogchan = (await interaction.guild!.channels.fetch(
+    battleLogChannel
+  )) as TextChannel;
+
+  const embed = new EmbedBuilder()
+    .setColor(0x0099ff)
+    .setTitle(
+      `Match Result: ${
+        (await interaction.guild!.members.fetch(winnerId)).displayName
+      } (${winnerdata.elo}) vs ${
+        (await interaction.guild!.members.fetch(loserId)).displayName
+      } (${loserdata.elo})`
+    )
+    .setDescription(
+      `🏆<@${winnerId}> defeats <@${loserId}>!\n\n📊ELO Change: +${elocalc.winnerChange} for <@${winnerId}>, -${elocalc.loserChange} for <@${loserId}>`
+    )
+    .setTimestamp(new Date());
+
+  await blogchan.send({
+    content: `<@${winnerId}> <@${loserId}>`,
+    embeds: [embed],
+  });
+
+  await persistBattleLog(battles, elocalc, winnerId, loserId);
+
+  // Delete match channel
+  if (
+    interaction.channel &&
+    interaction.channel.type === ChannelType.GuildText
+  ) {
+    await interaction.channel.delete();
+  }
+}
