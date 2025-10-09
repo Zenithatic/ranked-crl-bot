@@ -114,7 +114,7 @@ module.exports = {
 
         // Winner did not dupe, win counts
         player1wins += 1;
-        validBattlesProcessed += 1;
+        validBattlesProcessed += player1wins == 2 ? 3 : 1; // end if player1 wins 2
 
         // Check if loser used duplicate cards
         const player2Cards = battle.opponent[0].cards.map(
@@ -174,7 +174,7 @@ module.exports = {
 
         // Winner did not dupe, win counts
         player2wins += 1;
-        validBattlesProcessed += 1;
+        validBattlesProcessed += player2wins == 2 ? 3 : 1; // end if player2 wins 2
 
         // Check if loser used duplicate cards
         const player1Cards = battle.team[0].cards.map((card: any) => card.name);
