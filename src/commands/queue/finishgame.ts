@@ -92,7 +92,14 @@ module.exports = {
 
       if (battle.opponent[0].tag != "#" + player2data.playerTag) {
         interaction.reply({
-          content: `❌ One of the recent battles for <@${player1id}> is not against <@${player2id}>.`,
+          content: `❌ One of the recent battles for <@${player1id}> is not against <@${player2id}>.\n\n
+          Battle Log:\n
+          ${JSON.stringify(battles, null, 2)}\n
+          <@${player1id}>'s cards:\n
+          ${JSON.stringify(player1UsedCards, null, 2)}\n
+          <@${player2id}>'s cards:\n
+          ${JSON.stringify(player2UsedCards, null, 2)}\n
+          `,
         });
         return;
       }
@@ -249,7 +256,7 @@ async function handleGameEnd(
   const elocalc = calculateEloChange(winnerdata.elo, loserdata.elo);
 
   await interaction.reply({
-    content: `🏆 <@${winnerId}> wins the match! (+${elocalc.winnerChange} ELO) <@${loserId}> (-${elocalc.loserChange} ELO)`,
+    content: `🏆 <@${winnerId}> wins the match! (+${elocalc.winnerChange} ELO) <@${loserId}> (${elocalc.loserChange} ELO)`,
   });
 
   const blogchan = (await interaction.guild!.channels.fetch(
@@ -266,7 +273,7 @@ async function handleGameEnd(
       } (${loserdata.elo})`
     )
     .setDescription(
-      `🏆<@${winnerId}> defeats <@${loserId}>!\n\n📊ELO Change: +${elocalc.winnerChange} for <@${winnerId}>, -${elocalc.loserChange} for <@${loserId}>`
+      `🏆<@${winnerId}> defeats <@${loserId}>!\n\n📊ELO Change: +${elocalc.winnerChange} for <@${winnerId}>, ${elocalc.loserChange} for <@${loserId}>`
     )
     .setTimestamp(new Date());
 
