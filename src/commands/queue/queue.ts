@@ -11,7 +11,7 @@ import {
   COOLDOWN_TIMES,
 } from "../../utils/classes_types/cooldown";
 import { commandCheck } from "../../utils/functions/commandchecks";
-import { getUserData } from "../../utils/db/registrationdb";
+import { getUserData, setFriendLink } from "../../utils/db/registrationdb";
 dotenv.config();
 
 // Create a cooldown manager for this command with 1-minute cooldown
@@ -23,6 +23,12 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("queue")
     .setDescription("Enter the ranked queue to be matched with other players.")
+    .addStringOption((option) =>
+      option
+        .setName("friendlink")
+        .setDescription("Your Clash Royale friend link (expires in 24h).")
+        .setRequired(true)
+    )
     .setDefaultMemberPermissions(null), // Allow all users to use this command
   async execute(interaction: ChatInputCommandInteraction) {
     // Check if command is used validly
@@ -31,6 +37,32 @@ module.exports = {
     // Set cooldown after successful execution
     const userId = interaction.user.id;
     cooldown.setCooldown(userId);
+
+    // Check if friendlink is specified
+    const friendLink = interaction.options.getString("friendlink");
+    // Check for valid friend link
+    if (
+      !friendLink ||
+      !friendLink.startsWith("https://link.clashroyale.com/invite/friend")
+    ) {
+      await interaction.reply({
+        content:
+          "❌ Invalid friend link. Please provide a valid Clash Royale friend link.",
+        ephemeral: true,
+      });
+      return;
+    }
+
+    // Set friend link
+    const res = await setFriendLink(userId, friendLink);
+
+    if (!res) {
+      await interaction.reply({
+        content: "❌ Error updating friend link. Please contact an admin.",
+        ephemeral: true,
+      });
+      return;
+    }
 
     // Attempt to queue the user
     const result = await queuePlayer(userId);

@@ -1,6 +1,12 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { getUserData } from "../../utils/db/registrationdb";
-import { stringify } from "querystring";
+import { commandCheck } from "../../utils/functions/commandchecks";
+import {
+  COOLDOWN_TIMES,
+  CooldownManager,
+} from "../../utils/classes_types/cooldown";
+
+const cooldown = new CooldownManager(COOLDOWN_TIMES.TEN_SECONDS);
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -14,6 +20,9 @@ module.exports = {
     )
     .setDefaultMemberPermissions(null), // Allow all users to use this command
   async execute(interaction: ChatInputCommandInteraction) {
+    // Check if command is used validly
+    if (!(await commandCheck(interaction, cooldown, false))) return;
+
     // Fetch user profile information from the database
     const userId =
       interaction.options.getUser("user")?.id || interaction.user.id;
@@ -50,5 +59,8 @@ module.exports = {
         },
       ],
     });
+
+    // Set cooldown after successful execution
+    cooldown.setCooldown(interaction.user.id);
   },
 };

@@ -110,6 +110,7 @@ export const defaultCooldownManager = new CooldownManager(5 * 60 * 1000);
 
 // Export some common cooldown times as constants
 export const COOLDOWN_TIMES = {
+  TEN_SECONDS: 10 * 1000,
   THIRTY_SECONDS: 30 * 1000,
   ONE_MINUTE: 60 * 1000,
   TWO_MINUTES: 2 * 60 * 1000,

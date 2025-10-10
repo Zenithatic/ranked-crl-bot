@@ -11,11 +11,11 @@ const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("setfriendlink")
-    .setDescription("Sets your Clash Royale friend link.")
+    .setDescription("Sets your Clash Royale friend link. (Expires in 24h)")
     .addStringOption((option) =>
       option
         .setName("friendlink")
-        .setDescription("Your Clash Royale friend link.")
+        .setDescription("Your Clash Royale friend link (expires in 24h).")
         .setRequired(true)
     )
     .setDefaultMemberPermissions(null), // Allow all users to use this command
@@ -55,7 +55,8 @@ module.exports = {
 
     // Confirm success
     await interaction.reply({
-      content: "✅ Your friend link has been updated successfully.",
+      content:
+        "✅ Your friend link has been updated successfully. Note that it expires in 24 hours.",
       ephemeral: true,
     });
   },
