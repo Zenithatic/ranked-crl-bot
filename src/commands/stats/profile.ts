@@ -18,6 +18,7 @@ module.exports = {
     const userId =
       interaction.options.getUser("user")?.id || interaction.user.id;
     const userData = await getUserData(userId);
+    const discordUser = interaction.options.getUser("user") || interaction.user;
 
     if (!userData) {
       await interaction.reply({
@@ -30,7 +31,7 @@ module.exports = {
     await interaction.reply({
       embeds: [
         {
-          title: `Profile: <@${userId}> with player tag #${userData.playerTag}`,
+          title: `Profile: ${discordUser.displayName} with player tag #${userData.playerTag}`,
           fields: [
             { name: "Elo", value: `${userData.elo}`, inline: true },
             { name: "Wins", value: `${userData.wins}`, inline: true },
