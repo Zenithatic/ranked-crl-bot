@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { getUserData } from "../../utils/db/registrationdb";
+import { stringify } from "querystring";
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -35,6 +36,8 @@ module.exports = {
             // Implement last game later
             { name: "Friend Link", value: userData.friend_link, inline: true },
           ],
+          color: 0x0099ff,
+          timestamp: new Date().toISOString(),
         },
       ],
     });
