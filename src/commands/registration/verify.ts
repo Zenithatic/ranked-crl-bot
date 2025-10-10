@@ -10,7 +10,7 @@ import {
 } from "../../utils/functions/commandchecks";
 import { getBattleLogs } from "../../utils/data/api";
 
-const cooldown = new CooldownManager(COOLDOWN_TIMES.FIVE_MINUTES);
+const cooldown = new CooldownManager(COOLDOWN_TIMES.TWO_MINUTES);
 
 module.exports = {
   data: new SlashCommandBuilder()
