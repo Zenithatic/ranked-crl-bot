@@ -104,14 +104,7 @@ module.exports = {
             {
               title: `Match: #${playertag1} (${player1elo} elo) vs #${playertag2} (${player2elo} elo)`,
               description: `<@${result.match.discordId}> has been matched with <@${userId}>!\n\n
-                Please coordinate with each other to play your matches.\n
-                This match is a best of 3 with NO card duplicates between matches, per player.\n
-                Do not play any other matches / gamemodes until this game is complete. \n
-                Once the best of 3 is complete, one of the players must run /finishgame.\n
-                Disconnects mid-game are considered complete games and will not be replayed.\n
-                Time limits: 5 minutes to make a deck, anything more is considered stalling.\n
-                If a player does not respond in 10 minutes, it is considered abandonment, which will be punished\n
-                If you have any issues, please contact the help team, or make a ticket.\n\n `,
+                Please read <#1426001621879357451> for instructions`,
               color: 0x00ff00,
             },
           ],

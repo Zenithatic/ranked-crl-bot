@@ -227,6 +227,8 @@ module.exports = {
       await handleGameEnd(
         player1data,
         player2data,
+        player1wins,
+        player2wins,
         player1id,
         player2id,
         battles,
@@ -236,6 +238,8 @@ module.exports = {
       await handleGameEnd(
         player2data,
         player1data,
+        player2wins,
+        player1wins,
         player2id,
         player1id,
         battles,
@@ -248,6 +252,8 @@ module.exports = {
 async function handleGameEnd(
   winnerdata: PlayerData,
   loserdata: PlayerData,
+  winnerwins: number,
+  loserwins: number,
   winnerId: string,
   loserId: string,
   battles: BattleLog[],
@@ -273,7 +279,7 @@ async function handleGameEnd(
       } (${loserdata.elo})`
     )
     .setDescription(
-      `🏆<@${winnerId}> defeats <@${loserId}>!\n\n📊ELO Change: +${elocalc.winnerChange} for <@${winnerId}>, ${elocalc.loserChange} for <@${loserId}>`
+      `🏆<@${winnerId}> defeats <@${loserId}> with score **${winnerwins} - ${loserwins}**!\n\n📊ELO Change: +${elocalc.winnerChange} for <@${winnerId}>, ${elocalc.loserChange} for <@${loserId}>`
     )
     .setTimestamp(new Date());
 
