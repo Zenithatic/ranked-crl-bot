@@ -6,10 +6,17 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("profile")
     .setDescription("Displays RankedCRL user profile information.")
+    .addUserOption((option) =>
+      option
+        .setName("user")
+        .setDescription("The user to view the profile of.")
+        .setRequired(false)
+    )
     .setDefaultMemberPermissions(null), // Allow all users to use this command
   async execute(interaction: ChatInputCommandInteraction) {
     // Fetch user profile information from the database
-    const userId = interaction.user.id;
+    const userId =
+      interaction.options.getUser("user")?.id || interaction.user.id;
     const userData = await getUserData(userId);
 
     if (!userData) {
@@ -23,7 +30,7 @@ module.exports = {
     await interaction.reply({
       embeds: [
         {
-          title: `Profile: #${userData.playerTag}`,
+          title: `Profile: <@${userId}> with player tag #${userData.playerTag}`,
           fields: [
             { name: "Elo", value: `${userData.elo}`, inline: true },
             { name: "Wins", value: `${userData.wins}`, inline: true },
