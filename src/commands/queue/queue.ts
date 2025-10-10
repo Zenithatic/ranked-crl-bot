@@ -40,28 +40,30 @@ module.exports = {
 
     // Check if friendlink is specified
     const friendLink = interaction.options.getString("friendlink");
-    // Check for valid friend link
-    if (
-      !friendLink ||
-      !friendLink.startsWith("https://link.clashroyale.com/invite/friend")
-    ) {
-      await interaction.reply({
-        content:
-          "❌ Invalid friend link. Please provide a valid Clash Royale friend link.",
-        ephemeral: true,
-      });
-      return;
-    }
 
-    // Set friend link
-    const res = await setFriendLink(userId, friendLink);
+    // Check for valid friend link if provided
+    if (friendLink) {
+      if (
+        !friendLink.startsWith("https://link.clashroyale.com/invite/friend")
+      ) {
+        await interaction.reply({
+          content:
+            "❌ Invalid friend link. Please provide a valid Clash Royale friend link.",
+          ephemeral: true,
+        });
+        return;
+      }
 
-    if (!res) {
-      await interaction.reply({
-        content: "❌ Error updating friend link. Please contact an admin.",
-        ephemeral: true,
-      });
-      return;
+      // Set friend link
+      const res = await setFriendLink(userId, friendLink);
+
+      if (!res) {
+        await interaction.reply({
+          content: "❌ Error updating friend link. Please contact an admin.",
+          ephemeral: true,
+        });
+        return;
+      }
     }
 
     // Attempt to queue the user
@@ -168,7 +170,6 @@ module.exports = {
         });
 
         // Add "In Queue" role
-        // specify role via id
         const inQueueRole = interaction.guild!.roles.cache.find(
           (role) => role.name === "In Queue"
         );
