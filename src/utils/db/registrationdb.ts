@@ -232,7 +232,7 @@ async function persistBattleLog(
 
   const updateloserres = await updateUserData(loserId, {
     current_opponent: undefined,
-    elo: loserold.elo + eloChange.loserChange,
+    elo: Math.max(0, loserold.elo + eloChange.loserChange),
     in_game: false,
     past_20_games: JSON.stringify(loserpast20),
     losses: loserold.losses + 1,
