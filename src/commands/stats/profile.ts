@@ -19,6 +19,7 @@ module.exports = {
       interaction.options.getUser("user")?.id || interaction.user.id;
     const userData = await getUserData(userId);
     const discordUser = interaction.options.getUser("user") || interaction.user;
+    const guildMember = await interaction.guild!.members.fetch(userId);
 
     if (!userData) {
       await interaction.reply({
@@ -31,7 +32,7 @@ module.exports = {
     await interaction.reply({
       embeds: [
         {
-          title: `Profile: ${discordUser.displayName}`,
+          title: `Profile: ${guildMember.displayName}`,
           fields: [
             { name: "Elo", value: `${userData.elo}`, inline: true },
             { name: "Wins", value: `${userData.wins}`, inline: true },
