@@ -96,7 +96,7 @@ module.exports = {
     } else {
       await interaction.reply({
         content:
-          "❌ Verification failed. Your current deck does not match the registration deck. Please ensure you have switched to the correct deck on TROPHY ROAD and try again in a few minutes.",
+          "❌ Verification failed. Your latest battle does not show that you used the registration deck. Please ensure you have played a classic 1v1 with the deck and try again in a few minutes.",
         ephemeral: true,
       });
     }
