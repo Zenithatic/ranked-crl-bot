@@ -27,7 +27,7 @@ module.exports = {
       option
         .setName("friendlink")
         .setDescription("Your Clash Royale friend link (expires in 24h).")
-        .setRequired(true)
+        .setRequired(false)
     )
     .setDefaultMemberPermissions(null), // Allow all users to use this command
   async execute(interaction: ChatInputCommandInteraction) {
