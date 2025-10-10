@@ -31,7 +31,7 @@ module.exports = {
     await interaction.reply({
       embeds: [
         {
-          title: `Profile: ${discordUser.displayName} with player tag #${userData.playerTag}`,
+          title: `Profile: ${discordUser.displayName}`,
           fields: [
             { name: "Elo", value: `${userData.elo}`, inline: true },
             { name: "Wins", value: `${userData.wins}`, inline: true },
