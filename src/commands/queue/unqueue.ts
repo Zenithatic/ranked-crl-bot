@@ -28,14 +28,6 @@ module.exports = {
     const result = await unqueuePlayer(userId);
 
     if (result.success) {
-      // Remove "In Queue" role from both players
-      const inQueueRole = interaction.guild!.roles.cache.find(
-        (role) => role.name === "In Queue"
-      );
-      if (inQueueRole) {
-        const member = await interaction.guild!.members.fetch(userId);
-        await member.roles.remove(inQueueRole);
-      }
       await interaction.reply({
         content: `✅ ${result.message}`,
         ephemeral: true,

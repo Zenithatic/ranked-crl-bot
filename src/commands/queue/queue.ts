@@ -145,19 +145,6 @@ module.exports = {
           content: `<@${userId}>'s friend link: ${player1link}\n\n<@${result.match.discordId}>'s friend link: ${player2link}\n\n`,
         });
 
-        // Remove "In Queue" role from both players
-        const inQueueRole = interaction.guild!.roles.cache.find(
-          (role) => role.name === "In Queue"
-        );
-        if (inQueueRole) {
-          const member1 = await interaction.guild!.members.fetch(userId);
-          await member1.roles.remove(inQueueRole);
-          const member2 = await interaction.guild!.members.fetch(
-            result.match.discordId
-          );
-          await member2.roles.remove(inQueueRole);
-        }
-
         // respond
         await interaction.reply({
           content: `✅ Match found! You have been paired with <@${result.match.discordId}> (Player Tag: ${result.match.playerTag}). Please coordinate with them to start your match.`,
@@ -168,15 +155,6 @@ module.exports = {
           content: `✅ ${result.message}`,
           ephemeral: true,
         });
-
-        // Add "In Queue" role
-        const inQueueRole = interaction.guild!.roles.cache.find(
-          (role) => role.name === "In Queue"
-        );
-        if (inQueueRole) {
-          const member = await interaction.guild!.members.fetch(userId);
-          await member.roles.add(inQueueRole);
-        }
       }
     } else {
       await interaction.reply({
