@@ -15,8 +15,8 @@ async function printLeaderboard(channel: TextChannel) {
 
   let description = "Top 25 Players:\n\n";
   lbdata.forEach((player, index) => {
-    const rank = `${index + 1}.`.padEnd(4);
-    const elo = player.elo.toString().padEnd(5);
+    const rank = `${index + 1}.`.padStart(4);
+    const elo = player.elo.toString().padStart(5);
     description += `${rank} ELO - ${elo}: <@${player.id}>\n`;
   });
   leaderboardEmbed.setDescription(description);
