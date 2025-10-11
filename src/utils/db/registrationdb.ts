@@ -7,7 +7,7 @@ import {
   QueryCommand,
   ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { getPlayerCount, setPlayerCount } from "../cache/queuecache";
+import { getVerifiedPlayers, setVerifiedPlayers } from "../cache/queuecache";
 import { cards } from "../data/cards";
 import { PlayerData } from "../classes_types/PlayerData";
 import { BattleLog } from "../classes_types/BattleLog";
@@ -109,20 +109,6 @@ async function initiateRegistration(playerTag: string, discordId: string) {
 
   // Return the deck list
   return deckList;
-}
-
-async function getPlayerCountFromDB() {
-  const playerCount = await getPlayerCount();
-  if (playerCount !== -1) {
-    return playerCount;
-  }
-  const command = {
-    TableName: REGISTRATION_TABLE_NAME,
-    Select: "COUNT" as const,
-  };
-  const result = await ddbDocClient.send(new ScanCommand(command));
-  await setPlayerCount(result.Count || -1);
-  return result.Count || -1;
 }
 
 async function getUserData(discordId: string): Promise<PlayerData | null> {
@@ -282,33 +268,39 @@ async function finishRegistration(discordId: string) {
 }
 
 async function getPlayerRank(discordId: string): Promise<string> {
-  // Get all players from the database
-  const command = {
-    TableName: REGISTRATION_TABLE_NAME,
-    FilterExpression: "verified = :verified",
-    ExpressionAttributeValues: {
-      ":verified": true,
-    },
-  };
+  const cachedData = await getVerifiedPlayers();
+  let verifiedPlayers;
 
-  const result = await ddbDocClient.send(new ScanCommand(command));
+  if (cachedData !== "") {
+    verifiedPlayers = JSON.parse(cachedData);
+  } else {
+    const command = {
+      TableName: REGISTRATION_TABLE_NAME,
+      FilterExpression: "verified = :verified",
+      ExpressionAttributeValues: {
+        ":verified": true,
+      },
+    };
 
-  // Sort players by ELO in descending order (highest ELO first)
-  const sortedPlayers = result
-    .Items!.filter((player: any) => player.verified === true)
-    .sort((a: any, b: any) => b.elo - a.elo);
+    const result = await ddbDocClient.send(new ScanCommand(command));
+    verifiedPlayers = result.Items || [];
+    await setVerifiedPlayers(JSON.stringify(verifiedPlayers));
+  }
 
-  // Find the player's position (1-indexed)
+  if (verifiedPlayers.length === 0) {
+    return "0/0";
+  }
+
+  const sortedPlayers = verifiedPlayers.sort((a: any, b: any) => b.elo - a.elo);
   const playerIndex = sortedPlayers.findIndex(
     (player: any) => player.id === discordId
   );
 
-  // Use getPlayerCountFromDB for total players count
-  const totalPlayers = await getPlayerCountFromDB();
-  const rank = playerIndex + 1; // 1-indexed ranking
-  const count = totalPlayers || sortedPlayers.length; // fallback to sortedPlayers.length if getPlayerCountFromDB fails
+  if (playerIndex === -1) {
+    return "Unranked";
+  }
 
-  return `${rank}/${count}`;
+  return `${playerIndex + 1}/${sortedPlayers.length}`;
 }
 
 export {
@@ -319,6 +311,5 @@ export {
   setFriendLink,
   terminateGame,
   finishRegistration,
-  getPlayerCountFromDB,
   getPlayerRank,
 };

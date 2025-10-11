@@ -116,25 +116,25 @@ async function queuePlayer(discordId: string) {
   }
 }
 
-async function getPlayerCount() {
+async function getVerifiedPlayers() {
   initRedis();
   if (!redis) {
     throw new Error("Redis client not initialized");
   }
-  const result = await redis.get("ranked-crl-player-count");
+  const result = await redis.get("ranked-crl-verified-players");
   if (!result) {
-    return -1;
+    return "";
   }
-  return parseInt(result);
+  return result;
 }
 
-async function setPlayerCount(count: number) {
+async function setVerifiedPlayers(data: string) {
   initRedis();
   if (!redis) {
     throw new Error("Redis client not initialized");
   }
-  const ttl = 60 * 60 * 1; // 1 hour
-  await redis.set("ranked-crl-player-count", count.toString(), "EX", ttl);
+  const ttl = 60 * 10; // 10 minutes
+  await redis.set("ranked-crl-verified-players", data, "EX", ttl);
 }
 
 async function unqueuePlayer(discordId: string) {
@@ -168,6 +168,6 @@ export {
   ReturnMessage,
   queuePlayer,
   unqueuePlayer,
-  getPlayerCount,
-  setPlayerCount,
+  getVerifiedPlayers,
+  setVerifiedPlayers,
 };

@@ -1,9 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import {
-  getPlayerCountFromDB,
-  getUserData,
-  getPlayerRank,
-} from "../../utils/db/registrationdb";
+import { getUserData, getPlayerRank } from "../../utils/db/registrationdb";
 import { commandCheck } from "../../utils/functions/commandchecks";
 import {
   COOLDOWN_TIMES,
