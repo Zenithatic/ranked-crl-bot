@@ -52,7 +52,7 @@ module.exports = {
     const player2id = interaction.channel.name.split("-")[2];
     const player1data = await getUserData(player1id);
     const player2data = await getUserData(player2id);
-    const timestart = interaction.channel.createdAt;
+    const timestart = parseInt(interaction.channel.topic!.split("-")[1]);
 
     if (!player1data || !player2data) {
       await interaction.reply({
@@ -80,8 +80,8 @@ module.exports = {
     // add top battles against other player, after channel was created
     for (const battle of rawbattles) {
       if (
-        battle.opponent[0].tag === "#" + player2data.playerTag &&
-        new Date(battle.battleTime) >= timestart
+        battle.opponent[0].tag == "#" + player2data.playerTag &&
+        new Date(battle.battleTime).getTime() >= timestart
       ) {
         player1battles.push(battle);
       } else {
