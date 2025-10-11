@@ -1,9 +1,10 @@
 // Imports
-import { Client, GatewayIntentBits, Collection } from "discord.js";
+import { Client, GatewayIntentBits, Collection, TextChannel } from "discord.js";
 import dotenv from "dotenv";
 dotenv.config();
 import fs from "node:fs";
 import path from "node:path";
+import { printLeaderboard } from "./utils/functions/printleaderboard";
 
 // Create a new client instance with necessary intents (basically permissions)
 const client = new Client({
@@ -43,8 +44,20 @@ for (const folder of commandFolders) {
 }
 
 // Client ready event
-client.once("clientReady", () => {
+client.once("clientReady", async () => {
   console.log(`Logged in as ${client.user?.tag}!`);
+
+  // Leaderboard loop every 12 hours
+  const leaderboardchannelid = "1421366223144226867";
+  const leaderboardchannel = client.channels.cache.get(
+    leaderboardchannelid
+  ) as TextChannel;
+  await printLeaderboard(leaderboardchannel);
+  setInterval(async () => {
+    if (!leaderboardchannel) return;
+
+    await printLeaderboard(leaderboardchannel);
+  }, 60 * 60 * 12 * 1000);
 });
 
 // Handle slash command interactions

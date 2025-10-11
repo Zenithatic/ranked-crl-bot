@@ -303,6 +303,36 @@ async function getPlayerRank(discordId: string): Promise<string> {
   return `${playerIndex + 1}/${sortedPlayers.length}`;
 }
 
+async function fetchTopPlayers(limit: number): Promise<PlayerData[]> {
+  const cachedData = await getVerifiedPlayers();
+  let verifiedPlayers;
+
+  if (cachedData !== "") {
+    verifiedPlayers = JSON.parse(cachedData);
+  } else {
+    const command = {
+      TableName: REGISTRATION_TABLE_NAME,
+      FilterExpression: "verified = :verified",
+      ExpressionAttributeValues: {
+        ":verified": true,
+      },
+    };
+
+    const result = await ddbDocClient.send(new ScanCommand(command));
+    verifiedPlayers = result.Items || [];
+    if (verifiedPlayers.length !== 0) {
+      await setVerifiedPlayers(JSON.stringify(verifiedPlayers));
+    }
+  }
+
+  if (verifiedPlayers.length === 0) {
+    return [];
+  }
+
+  const sortedPlayers = verifiedPlayers.sort((a: any, b: any) => b.elo - a.elo);
+  return sortedPlayers.slice(0, limit);
+}
+
 export {
   initiateRegistration,
   getUserData,
@@ -312,4 +342,5 @@ export {
   terminateGame,
   finishRegistration,
   getPlayerRank,
+  fetchTopPlayers,
 };
