@@ -273,50 +273,12 @@ async function terminateGame(discordId: string) {
   return res;
 }
 
-async function getPlayerRank(
-  discordId: string
-): Promise<{ rank: number; totalPlayers: number } | null> {
-  try {
-    // Get all players from the database
-    const command = {
-      TableName: REGISTRATION_TABLE_NAME,
-      FilterExpression: "verified = :verified",
-      ExpressionAttributeValues: {
-        ":verified": true,
-      },
-    };
+async function finishRegistration(discordId: string) {
+  const res = await updateUserData(discordId, {
+    verified: true,
+  });
 
-    const result = await ddbDocClient.send(new ScanCommand(command));
-
-    if (!result.Items || result.Items.length === 0) {
-      return null;
-    }
-
-    // Sort players by ELO in descending order (highest ELO first)
-    const sortedPlayers = result.Items.filter(
-      (player: any) => player.verified === true
-    ).sort((a: any, b: any) => b.elo - a.elo);
-
-    // Find the player's position (1-indexed)
-    const playerIndex = sortedPlayers.findIndex(
-      (player: any) => player.id === discordId
-    );
-
-    if (playerIndex === -1) {
-      return null; // Player not found
-    }
-
-    // Use getPlayerCountFromDB for total players count
-    const totalPlayers = await getPlayerCountFromDB();
-
-    return {
-      rank: playerIndex + 1, // 1-indexed ranking
-      totalPlayers: totalPlayers || sortedPlayers.length, // fallback to sortedPlayers.length if getPlayerCountFromDB fails
-    };
-  } catch (error) {
-    console.error("Error getting player rank:", error);
-    return null;
-  }
+  return res;
 }
 
 export {
@@ -326,6 +288,7 @@ export {
   persistBattleLog,
   setFriendLink,
   terminateGame,
+  finishRegistration,
   getPlayerCountFromDB,
   getPlayerRank,
 };
