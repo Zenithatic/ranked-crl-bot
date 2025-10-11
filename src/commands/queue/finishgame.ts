@@ -79,9 +79,14 @@ module.exports = {
 
     // add top battles against other player, after channel was created
     for (const battle of rawbattles) {
+      const raw = battle.battleTime;
+      const iso = raw.replace(
+        /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2}\.\d{3}Z)$/,
+        "$1-$2-$3T$4:$5:$6"
+      );
       if (
         battle.opponent[0].tag == "#" + player2data.playerTag &&
-        new Date(battle.battleTime).getTime() >= timestart
+        new Date(iso).getTime() >= timestart
       ) {
         player1battles.push(battle);
       } else {
