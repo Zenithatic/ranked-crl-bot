@@ -158,19 +158,7 @@ module.exports = {
           loserTag: player2data.playerTag,
           winnerId: player1id,
           loserId: player2id,
-          battleTime: new Date(
-            battle.battleTime.slice(0, 4) +
-              "-" +
-              battle.battleTime.slice(4, 6) +
-              "-" +
-              battle.battleTime.slice(6, 8) +
-              "T" +
-              battle.battleTime.slice(9, 11) +
-              ":" +
-              battle.battleTime.slice(11, 13) +
-              ":" +
-              battle.battleTime.slice(13)
-          ),
+          battleTime: new Date(battle.battleTime),
           player1cards: player1Cards,
           player2cards: player2Cards,
         });
@@ -216,19 +204,7 @@ module.exports = {
           loserTag: player1data.playerTag,
           winnerId: player2id,
           loserId: player1id,
-          battleTime: new Date(
-            battle.battleTime.slice(0, 4) +
-              "-" +
-              battle.battleTime.slice(4, 6) +
-              "-" +
-              battle.battleTime.slice(6, 8) +
-              "T" +
-              battle.battleTime.slice(9, 11) +
-              ":" +
-              battle.battleTime.slice(11, 13) +
-              ":" +
-              battle.battleTime.slice(13)
-          ),
+          battleTime: new Date(battle.battleTime),
           player1cards: player1Cards,
           player2cards: player2Cards,
         });
@@ -238,12 +214,12 @@ module.exports = {
     // Nobody wins yet
     if (player1wins < 2 && player2wins < 2) {
       interaction.reply({
-        content: `❌ One of the recent battles for <@${player1id}> is not against <@${player2id}>.\n\n
+        content: `❌ Nobody between <@${player1id}> and <@${player2id}> has won yet.\n\n
           Battle Log:\n
           ${JSON.stringify(battles, null, 2)}\n
-          <@${player1id}>'s cards:\n
+          <@${player1id}>'s used cards:\n
           ${JSON.stringify(player1UsedCards, null, 2)}\n
-          <@${player2id}>'s cards:\n
+          <@${player2id}>'s used cards:\n
           ${JSON.stringify(player2UsedCards, null, 2)}\n
           `,
       });
