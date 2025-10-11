@@ -215,6 +215,7 @@ module.exports = {
     if (player1wins < 2 && player2wins < 2) {
       interaction.reply({
         content: `❌ Nobody between <@${player1id}> and <@${player2id}> has won yet.\n\n
+          Current score: <@${player1id}> ${player1wins} - ${player2wins} <@${player2id}>\n
           Battle Log:\n
           ${JSON.stringify(battles, null, 2)}\n
           <@${player1id}>'s used cards:\n
