@@ -133,7 +133,8 @@ async function setPlayerCount(count: number) {
   if (!redis) {
     throw new Error("Redis client not initialized");
   }
-  await redis.set("ranked-crl-player-count", count.toString());
+  const ttl = 60 * 60 * 1; // 1 hour
+  await redis.set("ranked-crl-player-count", count.toString(), "EX", ttl);
 }
 
 async function unqueuePlayer(discordId: string) {
