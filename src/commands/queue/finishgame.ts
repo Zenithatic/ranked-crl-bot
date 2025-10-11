@@ -52,6 +52,7 @@ module.exports = {
     const player2id = interaction.channel.name.split("-")[2];
     const player1data = await getUserData(player1id);
     const player2data = await getUserData(player2id);
+    const timestart = interaction.channel.createdAt;
 
     if (!player1data || !player2data) {
       await interaction.reply({
@@ -73,7 +74,32 @@ module.exports = {
     // Set cooldown after successful execution
     cooldown.setCooldown(userId);
 
-    const player1battles = await player1logs.json();
+    const rawbattles = await player1logs.json();
+    let player1battles = [];
+
+    // add top battles against other player, after channel was created
+    for (const battle of rawbattles) {
+      if (
+        battle.opponent[0].tag === "#" + player2data.playerTag &&
+        new Date(battle.battleTime) >= timestart
+      ) {
+        player1battles.push(battle);
+      } else {
+        break;
+      }
+    }
+
+    // no battles found
+    if (player1battles.length === 0) {
+      interaction.reply({
+        content: `❌ <@${player1id}> has not played against <@${player2id}> in their latest matches.`,
+      });
+      return;
+    }
+
+    // reverse to get most oldest first
+    player1battles = player1battles.reverse();
+
     let battles: BattleLog[] = [];
     let player1wins = 0;
     let player2wins = 0;
@@ -88,20 +114,6 @@ module.exports = {
       // Break after processing the required number of battles
       if (validBattlesProcessed >= maxBattlesToCheck) {
         break;
-      }
-
-      if (battle.opponent[0].tag != "#" + player2data.playerTag) {
-        interaction.reply({
-          content: `❌ One of the recent battles for <@${player1id}> is not against <@${player2id}>.\n\n
-          Battle Log:\n
-          ${JSON.stringify(battles, null, 2)}\n
-          <@${player1id}>'s cards:\n
-          ${JSON.stringify(player1UsedCards, null, 2)}\n
-          <@${player2id}>'s cards:\n
-          ${JSON.stringify(player2UsedCards, null, 2)}\n
-          `,
-        });
-        return;
       }
 
       if (battle.team[0].crowns > battle.opponent[0].crowns) {
@@ -221,6 +233,21 @@ module.exports = {
           player2cards: player2Cards,
         });
       }
+    }
+
+    // Nobody wins yet
+    if (player1wins < 2 && player2wins < 2) {
+      interaction.reply({
+        content: `❌ One of the recent battles for <@${player1id}> is not against <@${player2id}>.\n\n
+          Battle Log:\n
+          ${JSON.stringify(battles, null, 2)}\n
+          <@${player1id}>'s cards:\n
+          ${JSON.stringify(player1UsedCards, null, 2)}\n
+          <@${player2id}>'s cards:\n
+          ${JSON.stringify(player2UsedCards, null, 2)}\n
+          `,
+      });
+      return;
     }
 
     if (player1wins > player2wins) {
