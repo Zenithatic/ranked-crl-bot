@@ -54,9 +54,7 @@ module.exports = {
             { name: "Losses", value: `${userData.losses}`, inline: true },
             {
               name: "Rank",
-              value: ranking
-                ? `${ranking.rank} / ${ranking.totalPlayers}`
-                : "N/A",
+              value: ranking,
               inline: true,
             },
             {

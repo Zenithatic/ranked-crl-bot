@@ -281,6 +281,36 @@ async function finishRegistration(discordId: string) {
   return res;
 }
 
+async function getPlayerRank(discordId: string): Promise<string> {
+  // Get all players from the database
+  const command = {
+    TableName: REGISTRATION_TABLE_NAME,
+    FilterExpression: "verified = :verified",
+    ExpressionAttributeValues: {
+      ":verified": true,
+    },
+  };
+
+  const result = await ddbDocClient.send(new ScanCommand(command));
+
+  // Sort players by ELO in descending order (highest ELO first)
+  const sortedPlayers = result
+    .Items!.filter((player: any) => player.verified === true)
+    .sort((a: any, b: any) => b.elo - a.elo);
+
+  // Find the player's position (1-indexed)
+  const playerIndex = sortedPlayers.findIndex(
+    (player: any) => player.id === discordId
+  );
+
+  // Use getPlayerCountFromDB for total players count
+  const totalPlayers = await getPlayerCountFromDB();
+  const rank = playerIndex + 1; // 1-indexed ranking
+  const count = totalPlayers || sortedPlayers.length; // fallback to sortedPlayers.length if getPlayerCountFromDB fails
+
+  return `${rank}/${count}`;
+}
+
 export {
   initiateRegistration,
   getUserData,
