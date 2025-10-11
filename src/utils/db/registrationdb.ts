@@ -5,7 +5,9 @@ import {
   GetCommand,
   UpdateCommand,
   QueryCommand,
+  ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
+import { getPlayerCount, setPlayerCount } from "../cache/queuecache";
 import { cards } from "../data/cards";
 import { PlayerData } from "../classes_types/PlayerData";
 import { BattleLog } from "../classes_types/BattleLog";
@@ -107,6 +109,20 @@ async function initiateRegistration(playerTag: string, discordId: string) {
 
   // Return the deck list
   return deckList;
+}
+
+async function getPlayerCountFromDB() {
+  const playerCount = await getPlayerCount();
+  if (playerCount !== -1) {
+    return playerCount;
+  }
+  const command = {
+    TableName: REGISTRATION_TABLE_NAME,
+    Select: "COUNT" as const,
+  };
+  const result = await ddbDocClient.send(new ScanCommand(command));
+  await setPlayerCount(result.Count || -1);
+  return result.Count || -1;
 }
 
 async function getUserData(discordId: string): Promise<PlayerData | null> {
@@ -273,4 +289,5 @@ export {
   setFriendLink,
   terminateGame,
   finishRegistration,
+  getPlayerCountFromDB,
 };

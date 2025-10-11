@@ -1,5 +1,8 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { getUserData } from "../../utils/db/registrationdb";
+import {
+  getPlayerCountFromDB,
+  getUserData,
+} from "../../utils/db/registrationdb";
 import { commandCheck } from "../../utils/functions/commandchecks";
 import {
   COOLDOWN_TIMES,
@@ -45,6 +48,11 @@ module.exports = {
             { name: "Elo", value: `${userData.elo}`, inline: true },
             { name: "Wins", value: `${userData.wins}`, inline: true },
             { name: "Losses", value: `${userData.losses}`, inline: true },
+            {
+              name: "Player Count",
+              value: `${await getPlayerCountFromDB()}`,
+              inline: true,
+            },
             {
               name: "Win Streak",
               value: `${userData.win_streak}`,
