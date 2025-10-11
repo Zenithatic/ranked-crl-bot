@@ -30,9 +30,18 @@ module.exports = {
     // Fetch user profile information from the database
     const userId =
       interaction.options.getUser("user")?.id || interaction.user.id;
-    const userData = await getUserData(userId);
     const guildMember = await interaction.guild!.members.fetch(userId);
 
+    // Check if user has Verified role
+    if (!guildMember.roles.cache.some((role) => role.name === "Verified")) {
+      await interaction.reply({
+        content: "❌ This user is not verified in the server.",
+        ephemeral: false,
+      });
+      return;
+    }
+
+    const userData = await getUserData(userId);
     if (!userData) {
       await interaction.reply({
         content: "❌ Error retrieving user profile information.",
