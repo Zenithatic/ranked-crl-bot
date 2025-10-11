@@ -306,9 +306,12 @@ async function getPlayerRank(
       return null; // Player not found
     }
 
+    // Use getPlayerCountFromDB for total players count
+    const totalPlayers = await getPlayerCountFromDB();
+
     return {
       rank: playerIndex + 1, // 1-indexed ranking
-      totalPlayers: sortedPlayers.length,
+      totalPlayers: totalPlayers || sortedPlayers.length, // fallback to sortedPlayers.length if getPlayerCountFromDB fails
     };
   } catch (error) {
     console.error("Error getting player rank:", error);
