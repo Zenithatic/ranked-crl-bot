@@ -12,8 +12,8 @@ import {
 import { getPlayer } from "../../utils/data/api";
 dotenv.config();
 
-// Create a cooldown manager for this command with 5-minute cooldown
-const cooldown = new CooldownManager(COOLDOWN_TIMES.FIVE_MINUTES);
+// Create a cooldown manager for this command with 1-minute cooldown
+const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -45,10 +45,14 @@ module.exports = {
     }
 
     // Extract Player Tag
-    const playerTag = interaction.options.getString("playertag");
+    let playerTag = interaction.options.getString("playertag");
     if (!playerTag) {
       await interaction.reply("Please provide a valid player tag.");
       return;
+    }
+    // remove leading # if present
+    if (playerTag.startsWith("#")) {
+      playerTag = playerTag.substring(1);
     }
 
     // Set cooldown after successful execution

@@ -273,6 +273,14 @@ async function terminateGame(discordId: string) {
   return res;
 }
 
+async function finishRegistration(discordId: string) {
+  const res = await updateUserData(discordId, {
+    verified: true,
+  });
+
+  return res;
+}
+
 export {
   initiateRegistration,
   getUserData,
@@ -280,5 +288,6 @@ export {
   persistBattleLog,
   setFriendLink,
   terminateGame,
+  finishRegistration,
   getPlayerCountFromDB,
 };

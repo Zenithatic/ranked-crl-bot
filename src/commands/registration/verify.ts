@@ -3,14 +3,14 @@ import {
   COOLDOWN_TIMES,
   CooldownManager,
 } from "../../utils/classes_types/cooldown";
-import { getUserData } from "../../utils/db/registrationdb";
+import { finishRegistration, getUserData } from "../../utils/db/registrationdb";
 import {
   commandCheck,
   verifiedCheck,
 } from "../../utils/functions/commandchecks";
 import { getBattleLogs } from "../../utils/data/api";
 
-const cooldown = new CooldownManager(COOLDOWN_TIMES.TWO_MINUTES);
+const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -86,6 +86,16 @@ module.exports = {
         await member.setNickname(newNickname);
       } catch (error) {
         console.error("Error setting nickname:", error);
+      }
+
+      const res = await finishRegistration(userId);
+      if (!res) {
+        await interaction.reply({
+          content:
+            "❌ An error occurred while finalizing your registration. Please contact an admin.",
+          ephemeral: true,
+        });
+        return;
       }
 
       await interaction.reply({
