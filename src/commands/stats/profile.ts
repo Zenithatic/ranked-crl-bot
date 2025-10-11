@@ -2,6 +2,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import {
   getPlayerCountFromDB,
   getUserData,
+  getPlayerRank,
 } from "../../utils/db/registrationdb";
 import { commandCheck } from "../../utils/functions/commandchecks";
 import {
@@ -41,6 +42,9 @@ module.exports = {
       return;
     }
 
+    // Get player ranking
+    const ranking = await getPlayerRank(userId);
+
     await interaction.reply({
       embeds: [
         {
@@ -50,8 +54,10 @@ module.exports = {
             { name: "Wins", value: `${userData.wins}`, inline: true },
             { name: "Losses", value: `${userData.losses}`, inline: true },
             {
-              name: "Player Count",
-              value: `${await getPlayerCountFromDB()}`,
+              name: "Rank",
+              value: ranking
+                ? `${ranking.rank} / ${ranking.totalPlayers}`
+                : "N/A",
               inline: true,
             },
             {
