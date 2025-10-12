@@ -2,6 +2,12 @@ import { EmbedBuilder, TextChannel } from "discord.js";
 import { fetchTopPlayers } from "../db/registrationdb";
 
 async function printLeaderboard(channel: TextChannel) {
+  // Delete all previous messages in channel
+  const messages = await channel.messages.fetch({ limit: 10 });
+  for (const message of messages.values()) {
+    await message.delete().catch(() => null);
+  }
+
   // Fetch and format leaderboard data
   const lbdata = await fetchTopPlayers(25);
   if (!lbdata || lbdata.length === 0) {
