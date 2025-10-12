@@ -127,6 +127,17 @@ module.exports = {
               PermissionFlagsBits.ReadMessageHistory,
             ],
           },
+          {
+            id: interaction.guild!.roles.cache.find(
+              (role) => role.name === "Mod"
+            )!.id, // allow mods
+            allow: [
+              PermissionFlagsBits.ViewChannel,
+              PermissionFlagsBits.SendMessages,
+              PermissionFlagsBits.ReadMessageHistory,
+              PermissionFlagsBits.ManageMessages,
+            ],
+          },
         ]);
 
         // Get friendlinks and send to channel
