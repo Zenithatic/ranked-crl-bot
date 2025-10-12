@@ -43,5 +43,9 @@ module.exports = {
     }
     const textchannel = channel as TextChannel;
     await textchannel.send({ embeds: [embed], components: [row.toJSON()] });
+    await interaction.reply({
+      content: "✅ Queue buttons sent!",
+      ephemeral: true,
+    });
   },
 };
