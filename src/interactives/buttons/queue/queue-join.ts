@@ -1,70 +1,48 @@
 import {
+  ActionRowBuilder,
+  ButtonInteraction,
   ChannelType,
-  ChatInputCommandInteraction,
+  ModalBuilder,
   PermissionFlagsBits,
-  SlashCommandBuilder,
+  TextInputBuilder,
+  TextInputStyle,
 } from "discord.js";
-import dotenv from "dotenv";
-import { queuePlayer } from "../../utils/cache/queuecache";
 import {
   CooldownManager,
   COOLDOWN_TIMES,
-} from "../../utils/classes_types/cooldown";
-import { commandCheck } from "../../utils/functions/interactionchecks";
-import { getUserData, setFriendLink } from "../../utils/db/registrationdb";
-dotenv.config();
+} from "../../../utils/classes_types/cooldown";
+import { buttonCheck } from "../../../utils/functions/interactionchecks";
+import { queuePlayer } from "../../../utils/cache/queuecache";
+import { getUserData } from "../../../utils/db/registrationdb";
 
-// Create a cooldown manager for this command with 1-minute cooldown
-const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
+// Create a cooldown manager for this command with 30-second cooldown
+const cooldown = new CooldownManager(COOLDOWN_TIMES.THIRTY_SECONDS);
 
 const matchChannelCategory = "1421362444382507049";
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("queue")
-    .setDescription("Enter the ranked queue to be matched with other players.")
-    .addStringOption((option) =>
-      option
-        .setName("friendlink")
-        .setDescription("Your Clash Royale friend link (expires in 24h).")
-        .setRequired(false)
-    )
-    .setDefaultMemberPermissions(null), // Allow all users to use this command
-  async execute(interaction: ChatInputCommandInteraction) {
-    // Check if command is used validly
-    if (!(await commandCheck(interaction, cooldown, true))) return;
-
-    // Set cooldown after successful execution
+  customId: "queue-join",
+  async execute(interaction: ButtonInteraction) {
     const userId = interaction.user.id;
+    // Check if button is used validly
+    if (!(await buttonCheck(interaction, cooldown, true))) return;
+    // Set cooldown
     cooldown.setCooldown(userId);
 
-    // Check if friendlink is specified
-    const friendLink = interaction.options.getString("friendlink");
-
-    // Check for valid friend link if provided
-    if (friendLink) {
-      if (
-        !friendLink.startsWith("https://link.clashroyale.com/invite/friend")
-      ) {
-        await interaction.reply({
-          content:
-            "❌ Invalid friend link. Please provide a valid Clash Royale friend link.",
-          ephemeral: true,
-        });
-        return;
-      }
-
-      // Set friend link
-      const res = await setFriendLink(userId, friendLink);
-
-      if (!res) {
-        await interaction.reply({
-          content: "❌ Error updating friend link. Please contact an admin.",
-          ephemeral: true,
-        });
-        return;
-      }
-    }
+    // Show modal to prompt for optional friend link
+    const modal = new ModalBuilder()
+      .setCustomId("friendlink-modal")
+      .setTitle("Join Queue");
+    const friendInput = new TextInputBuilder()
+      .setCustomId("friend-link-input")
+      .setLabel("Enter your friend link (optional)")
+      .setPlaceholder("https://example.com/your-profile")
+      .setRequired(false)
+      .setStyle(TextInputStyle.Short);
+    modal.addComponents(
+      new ActionRowBuilder<TextInputBuilder>().addComponents(friendInput)
+    );
+    await interaction.showModal(modal);
 
     // Attempt to queue the user
     const result = await queuePlayer(userId);

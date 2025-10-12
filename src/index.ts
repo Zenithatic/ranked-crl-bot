@@ -2,9 +2,8 @@
 import { Client, GatewayIntentBits, Collection, TextChannel } from "discord.js";
 import dotenv from "dotenv";
 dotenv.config();
-import fs from "node:fs";
-import path from "node:path";
 import { printLeaderboard } from "./utils/functions/printleaderboard";
+import { loadButtons, loadCommands, loadModals } from "./loaders";
 
 // Create a new client instance with necessary intents (basically permissions)
 const client = new Client({
@@ -16,75 +15,104 @@ const client = new Client({
   ],
 });
 
-// Create a global collection to store commands
-const commands = new Collection<string, any>();
-
-// Load commands from the commands directory
-const foldersPath = path.join(__dirname, "commands");
-const commandFolders = fs.readdirSync(foldersPath);
-
-for (const folder of commandFolders) {
-  const commandsPath = path.join(foldersPath, folder);
-  const commandFiles = fs
-    .readdirSync(commandsPath)
-    .filter((file) => file.endsWith(".js"));
-
-  for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
-
-    if ("data" in command && "execute" in command) {
-      commands.set(command.data.name, command);
-    } else {
-      console.log(
-        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
-      );
-    }
-  }
-}
+// Load commands and interactives
+const commands = loadCommands();
+const buttons = loadButtons();
+const modals = loadModals();
 
 // Client ready event
 client.once("clientReady", async () => {
   console.log(`Logged in as ${client.user?.tag}!`);
 
   // Leaderboard loop every 12 hours
-  const leaderboardchannelid = "1421366223144226867";
-  const leaderboardchannel = client.channels.cache.get(
-    leaderboardchannelid
-  ) as TextChannel;
-  await printLeaderboard(leaderboardchannel);
+  await printLeaderboard(client);
   setInterval(async () => {
-    if (!leaderboardchannel) return;
-
-    await printLeaderboard(leaderboardchannel);
+    await printLeaderboard(client);
   }, 60 * 60 * 12 * 1000);
 });
 
-// Handle slash command interactions
+// Handle interactions
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+  // Handle Chat commands
+  if (interaction.isChatInputCommand()) {
+    const command = commands.get(interaction.commandName);
 
-  const command = commands.get(interaction.commandName);
+    if (!command) {
+      console.error(
+        `No command matching ${interaction.commandName} was found.`
+      );
+      return;
+    }
 
-  if (!command) {
-    console.error(`No command matching ${interaction.commandName} was found.`);
-    return;
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({
+          content: "There was an error while executing this command!",
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: "There was an error while executing this command!",
+          ephemeral: true,
+        });
+      }
+    }
   }
 
-  try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp({
-        content: "There was an error while executing this command!",
-        ephemeral: true,
-      });
-    } else {
-      await interaction.reply({
-        content: "There was an error while executing this command!",
-        ephemeral: true,
-      });
+  // Handle buttons
+  else if (interaction.isButton()) {
+    const button = buttons.get(interaction.customId);
+
+    if (!button) {
+      console.error(`No button matching ${interaction.customId} was found.`);
+      return;
+    }
+
+    try {
+      await button.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({
+          content: "There was an error while executing this button!",
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: "There was an error while executing this button!",
+          ephemeral: true,
+        });
+      }
+    }
+  }
+
+  // Handle modals
+  else if (interaction.isModalSubmit()) {
+    const modal = modals.get(interaction.customId);
+
+    if (!modal) {
+      console.error(`No modal matching ${interaction.customId} was found.`);
+      return;
+    }
+
+    try {
+      await modal.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({
+          content: "There was an error while executing this modal!",
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: "There was an error while executing this modal!",
+          ephemeral: true,
+        });
+      }
     }
   }
 });

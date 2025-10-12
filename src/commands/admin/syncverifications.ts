@@ -8,7 +8,7 @@ import {
   CooldownManager,
   COOLDOWN_TIMES,
 } from "../../utils/classes_types/cooldown";
-import { commandCheck } from "../../utils/functions/commandchecks";
+import { commandCheck } from "../../utils/functions/interactionchecks";
 import { finishRegistration } from "../../utils/db/registrationdb";
 dotenv.config();
 

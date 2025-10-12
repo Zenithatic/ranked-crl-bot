@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from "discord.js";
+import { ButtonInteraction, ChatInputCommandInteraction } from "discord.js";
 import { CooldownManager } from "../classes_types/cooldown";
 
 async function commandCheck(
@@ -50,7 +50,7 @@ async function commandCheck(
   return true;
 }
 
-async function verifiedCheck(interaction: ChatInputCommandInteraction) {
+async function cmdVerifiedCheck(interaction: ChatInputCommandInteraction) {
   // Check if user is already verified via discord roles
   const roles = interaction.member?.roles;
   if (roles && roles instanceof Object && "cache" in roles) {
@@ -67,4 +67,54 @@ async function verifiedCheck(interaction: ChatInputCommandInteraction) {
 
   return false;
 }
-export { commandCheck, verifiedCheck };
+
+async function buttonCheck(
+  interaction: ButtonInteraction,
+  cooldownManager: CooldownManager,
+  requireVerified = false
+) {
+  // Check if interaction is used in a guild (server
+  if (!interaction.guild) {
+    await interaction.reply({
+      content: "❌ This interaction can only be used in a server, not in DMs.",
+      ephemeral: true,
+    });
+    return false;
+  }
+
+  // Check cooldown
+  const userId = interaction.user.id;
+  const cooldownCheck = cooldownManager.checkCooldown(userId);
+
+  if (cooldownCheck.isOnCooldown) {
+    await interaction.reply({
+      content: `⏰ You can use this interaction again in ${cooldownCheck.timeLeft} minute(s).`,
+      ephemeral: true,
+    });
+    return false;
+  }
+
+  // Check for verification role
+  if (requireVerified) {
+    const roles = interaction.member?.roles;
+    if (roles && roles instanceof Object && "cache" in roles) {
+      const roleCache = roles.cache;
+      const isVerified = roleCache.some((role) =>
+        ["Verified"].includes(role.name)
+      );
+      if (!isVerified) {
+        await interaction.reply({
+          content:
+            "❌ You must be verified to use this interaction. Please complete the verification process using /verify.",
+          ephemeral: true,
+        });
+        return false;
+      }
+    }
+  }
+
+  // All checks passed
+  return true;
+}
+
+export { commandCheck, cmdVerifiedCheck, buttonCheck };

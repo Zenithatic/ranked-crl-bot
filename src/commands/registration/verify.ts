@@ -6,8 +6,8 @@ import {
 import { finishRegistration, getUserData } from "../../utils/db/registrationdb";
 import {
   commandCheck,
-  verifiedCheck,
-} from "../../utils/functions/commandchecks";
+  cmdVerifiedCheck,
+} from "../../utils/functions/interactionchecks";
 import { getBattleLogs } from "../../utils/data/api";
 
 const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
@@ -24,7 +24,7 @@ module.exports = {
     const userId = interaction.user.id;
 
     // Check if user is already verified via discord roles
-    if (await verifiedCheck(interaction)) {
+    if (await cmdVerifiedCheck(interaction)) {
       await interaction.reply({
         content:
           "❌ You are already registered. If you need to update your registration, please contact an admin.",

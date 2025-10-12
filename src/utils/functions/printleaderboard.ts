@@ -1,7 +1,12 @@
-import { EmbedBuilder, TextChannel } from "discord.js";
+import { Client, EmbedBuilder, TextChannel } from "discord.js";
 import { fetchTopPlayers } from "../db/registrationdb";
 
-async function printLeaderboard(channel: TextChannel) {
+async function printLeaderboard(client: Client) {
+  const leaderboardchannelid = "1421366223144226867";
+  const channel = client.channels.cache.get(
+    leaderboardchannelid
+  ) as TextChannel;
+
   // Delete all previous messages in channel
   const messages = await channel.messages.fetch({ limit: 10 });
   for (const message of messages.values()) {

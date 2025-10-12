@@ -7,8 +7,8 @@ import {
 } from "../../utils/classes_types/cooldown";
 import {
   commandCheck,
-  verifiedCheck,
-} from "../../utils/functions/commandchecks";
+  cmdVerifiedCheck,
+} from "../../utils/functions/interactionchecks";
 import { getPlayer } from "../../utils/data/api";
 dotenv.config();
 
@@ -35,7 +35,7 @@ module.exports = {
     const userId = interaction.user.id;
 
     // Check if user is already verified via discord roles
-    if (await verifiedCheck(interaction)) {
+    if (await cmdVerifiedCheck(interaction)) {
       await interaction.reply({
         content:
           "❌ You are already registered. If you need to update your registration, please contact an admin.",

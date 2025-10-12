@@ -10,7 +10,7 @@ import {
   CooldownManager,
   COOLDOWN_TIMES,
 } from "../../utils/classes_types/cooldown";
-import { commandCheck } from "../../utils/functions/commandchecks";
+import { commandCheck } from "../../utils/functions/interactionchecks";
 import { getUserData, persistBattleLog } from "../../utils/db/registrationdb";
 import { getBattleLogs } from "../../utils/data/api";
 import { calculateEloChange } from "../../utils/functions/elocalc";

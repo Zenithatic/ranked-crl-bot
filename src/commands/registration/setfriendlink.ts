@@ -4,7 +4,7 @@ import {
   CooldownManager,
 } from "../../utils/classes_types/cooldown";
 import { setFriendLink } from "../../utils/db/registrationdb";
-import { commandCheck } from "../../utils/functions/commandchecks";
+import { commandCheck } from "../../utils/functions/interactionchecks";
 
 const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
 

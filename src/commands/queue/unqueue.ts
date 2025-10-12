@@ -5,7 +5,7 @@ import {
   CooldownManager,
   COOLDOWN_TIMES,
 } from "../../utils/classes_types/cooldown";
-import { commandCheck } from "../../utils/functions/commandchecks";
+import { commandCheck } from "../../utils/functions/interactionchecks";
 dotenv.config();
 
 // Create a cooldown manager for this command with 1-minute cooldown
