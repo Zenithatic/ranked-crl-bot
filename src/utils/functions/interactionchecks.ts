@@ -117,4 +117,22 @@ async function buttonCheck(
   return true;
 }
 
-export { commandCheck, cmdVerifiedCheck, buttonCheck };
+async function btnVerifiedCheck(interaction: ButtonInteraction) {
+  // Check if user is already verified via discord roles
+  const roles = interaction.member?.roles;
+  if (roles && roles instanceof Object && "cache" in roles) {
+    const roleCache = roles.cache;
+    const isRegistered = roleCache.some((role) =>
+      ["Verified"].includes(role.name)
+    );
+    if (isRegistered) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  return false;
+}
+
+export { commandCheck, cmdVerifiedCheck, buttonCheck, btnVerifiedCheck };

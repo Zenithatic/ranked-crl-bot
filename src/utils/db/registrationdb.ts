@@ -47,7 +47,7 @@ async function initiateRegistration(playerTag: string, discordId: string) {
     ExpressionAttributeValues: {
       ":pt": playerTag,
     },
-    Limit: 1,
+    Limit: 10,
   };
 
   try {
@@ -57,7 +57,7 @@ async function initiateRegistration(playerTag: string, discordId: string) {
     if (
       existingByTagResult.Items &&
       existingByTagResult.Items.length > 0 &&
-      existingByTagResult.Items[0].verified === true
+      existingByTagResult.Items.some((item) => item.verified === true)
     ) {
       console.warn(
         `Player tag ${playerTag} is already registered. Registration aborted.`

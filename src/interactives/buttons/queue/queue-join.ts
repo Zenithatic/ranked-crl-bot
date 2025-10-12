@@ -29,7 +29,7 @@ module.exports = {
       .setTitle("Join Queue");
     const friendInput = new TextInputBuilder()
       .setCustomId("friend-link-input")
-      .setLabel("Enter your friend link (optional)")
+      .setLabel("Enter your friend link (optional) (expires in 24h)")
       .setPlaceholder("https://example.com/your-profile")
       .setRequired(false)
       .setStyle(TextInputStyle.Short);
