@@ -29,7 +29,7 @@ const embed = new EmbedBuilder()
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("sendQueueButtons")
+    .setName("sendqueuebuttons")
     .setDescription("Send the queue join/leave buttons.")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   async execute(interaction: ChatInputCommandInteraction) {
