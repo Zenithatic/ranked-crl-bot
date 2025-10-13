@@ -32,7 +32,10 @@ module.exports = {
     .setName("forcewin")
     .setDescription("Force a win for the specified player.")
     .addUserOption((option) =>
-      option.setName("player").setDescription("The player to force a win for.")
+      option
+        .setName("player")
+        .setDescription("The player to force a win for.")
+        .setRequired(true)
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers), // Allow only people who can ban members to use this command
   async execute(interaction: ChatInputCommandInteraction) {
