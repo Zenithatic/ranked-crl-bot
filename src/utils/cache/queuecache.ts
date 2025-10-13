@@ -5,7 +5,6 @@ import { getUserData, playerJoinGame } from "../db/registrationdb";
 dotenv.config();
 
 const P = "ranked-crl-valkey-rg.miaymu.ng.0001.use1.cache.amazonaws.com:6379";
-const MAX_ELO_DIFF = 200;
 let redis: Redis | undefined = undefined;
 
 function initRedis() {
@@ -58,6 +57,7 @@ async function queuePlayer(discordId: string) {
   const userElo = userData.elo;
 
   // See if existing players in queue within acceptable ELO range
+  const MAX_ELO_DIFF = Math.max((userData.glicko_rd || 350) * 1.5, 200); // calculate based on RD
   const minElo = userElo - MAX_ELO_DIFF;
   const maxElo = userElo + MAX_ELO_DIFF;
 

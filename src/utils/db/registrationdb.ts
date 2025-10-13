@@ -96,6 +96,9 @@ async function initiateRegistration(playerTag: string, discordId: string) {
       game_start_time: null,
       verified: false,
       friend_link: "",
+      glicko_rd: 350,
+      glicko_vol: 0.06,
+      placement_games: 5,
     },
   };
 
