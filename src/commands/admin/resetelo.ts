@@ -22,7 +22,7 @@ module.exports = {
     .addNumberOption((option) =>
       option
         .setName("elo")
-        .setDescription("The ELO to reset all users to. Default is 1000.")
+        .setDescription("The ELO to reset all users to. Default is 1500.")
         .setRequired(false)
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator), // Allow only admins
