@@ -300,9 +300,11 @@ async function handleGameEnd(
   glicko.updateRatings(matches);
 
   await interaction.reply({
-    content: `🏆 <@${winnerId}> wins the match! (+${
+    content: `🏆 <@${winnerId}> wins the match! (+${Math.round(
       winnerplayer.getRating() - winnerdata.elo
-    } ELO) <@${loserId}> (${loserplayer.getRating() - loserdata.elo} ELO)`,
+    )} ELO) <@${loserId}> (${Math.round(
+      loserplayer.getRating() - loserdata.elo
+    )} ELO)`,
   });
 
   const blogchan = (await interaction.guild!.channels.fetch(
@@ -319,11 +321,11 @@ async function handleGameEnd(
       } (${loserdata.elo})`
     )
     .setDescription(
-      `🏆<@${winnerId}> defeats <@${loserId}> with score **${winnerwins} - ${loserwins}**!\n\n📊ELO Change: +${
+      `🏆<@${winnerId}> defeats <@${loserId}> with score **${winnerwins} - ${loserwins}**!\n\n📊ELO Change: +${Math.round(
         winnerplayer.getRating() - winnerdata.elo
-      } for <@${winnerId}>, ${
+      )} for <@${winnerId}>, ${Math.round(
         loserplayer.getRating() - loserdata.elo
-      } for <@${loserId}>`
+      )} for <@${loserId}>`
     )
     .setTimestamp(new Date());
 

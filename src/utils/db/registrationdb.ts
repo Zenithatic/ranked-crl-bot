@@ -225,7 +225,7 @@ async function persistBattleLog(
   }
   const updatewinnerres = await updateUserData(winnerId, {
     current_opponent: "",
-    elo: Math.max(0, winnerplayer.getRating()),
+    elo: Math.round(Math.max(0, winnerplayer.getRating())),
     placement_games: winnerpg ? winnerold.placement_games - 1 : 0,
     glicko_rd: winnerpg ? 350 : winnerplayer.getRd(),
     glicko_vol: winnerplayer.getVol(),
@@ -246,7 +246,7 @@ async function persistBattleLog(
   }
   const updateloserres = await updateUserData(loserId, {
     current_opponent: undefined,
-    elo: Math.max(0, loserplayer.getRating()),
+    elo: Math.round(Math.max(0, loserplayer.getRating())),
     placement_games: loserpg ? loserold.placement_games - 1 : 0,
     glicko_rd: loserpg ? 350 : loserplayer.getRd(),
     glicko_vol: loserplayer.getVol(),
