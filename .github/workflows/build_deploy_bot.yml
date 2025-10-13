@@ -108,9 +108,10 @@ jobs:
             --parameters 'commands=[
               "echo Starting deployment...",
               "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 063867200367.dkr.ecr.us-east-1.amazonaws.com",
-              "docker pull 063867200367.dkr.ecr.us-east-1.amazonaws.com/ranked-crl-discord-bot-repo:latest",
               "docker stop discord-bot || true",
               "docker rm discord-bot || true",
+              "docker rmi 063867200367.dkr.ecr.us-east-1.amazonaws.com/ranked-crl-discord-bot-repo:latest || true",
+              "docker pull 063867200367.dkr.ecr.us-east-1.amazonaws.com/ranked-crl-discord-bot-repo:latest",
               "docker run -d --name discord-bot --restart unless-stopped --log-driver=awslogs --log-opt awslogs-group=/aws/ec2/discord-bot --log-opt awslogs-stream=$(hostname) -e TOKEN=${{ secrets.TOKEN }} -e GUILD_ID=${{ secrets.GUILD_ID }} -e CLIENT_ID=${{ secrets.CLIENT_ID }} -e API_TOKEN=${{ secrets.API_TOKEN }} -e AWS_REGION=us-east-1 063867200367.dkr.ecr.us-east-1.amazonaws.com/ranked-crl-discord-bot-repo:latest",
               "echo Deployment completed successfully"
             ]' \

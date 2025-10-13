@@ -16,7 +16,6 @@ import {
   getUserData,
   persistBattleLog,
   setupGlicko,
-  updateUserData,
 } from "../../utils/db/registrationdb";
 import { Glicko2, Player } from "glicko2.ts";
 import { BattleLog } from "../../utils/classes_types/BattleLog";
