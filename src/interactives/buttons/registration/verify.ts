@@ -14,10 +14,7 @@ import {
   btnVerifiedCheck,
 } from "../../../utils/functions/interactionchecks";
 import { getBattleLogs } from "../../../utils/data/api";
-import {
-  finishRegistration,
-  getUserData,
-} from "../../../utils/db/registrationdb";
+import { getUserData, updateUserData } from "../../../utils/db/registrationdb";
 
 // Create a cooldown manager for this command with one-minute cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
@@ -93,7 +90,7 @@ module.exports = {
         console.error("Error setting nickname:", error);
       }
 
-      const res = await finishRegistration(userId);
+      const res = await updateUserData(userId, { verified: true });
       if (!res) {
         await interaction.reply({
           content:
