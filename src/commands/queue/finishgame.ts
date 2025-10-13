@@ -5,18 +5,21 @@ import {
   SlashCommandBuilder,
   TextChannel,
 } from "discord.js";
-import dotenv from "dotenv";
 import {
   CooldownManager,
   COOLDOWN_TIMES,
 } from "../../utils/classes_types/cooldown";
 import { commandCheck } from "../../utils/functions/interactionchecks";
-import { getUserData, persistBattleLog } from "../../utils/db/registrationdb";
+import {
+  getUserData,
+  persistBattleLog,
+  setupGlicko,
+} from "../../utils/db/registrationdb";
 import { getBattleLogs } from "../../utils/data/api";
 import { calculateEloChange } from "../../utils/functions/elocalc";
 import { BattleLog } from "../../utils/classes_types/BattleLog";
 import { PlayerData } from "../../utils/classes_types/PlayerData";
-dotenv.config();
+import { Glicko2, Player } from "glicko2.ts";
 
 // Create a cooldown manager for this command with 1-minute cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
@@ -268,10 +271,39 @@ async function handleGameEnd(
   battles: BattleLog[],
   interaction: ChatInputCommandInteraction
 ) {
-  const elocalc = calculateEloChange(winnerdata.elo, loserdata.elo);
+  // Setup glicko in db for players if not there
+  await setupGlicko(winnerId);
+  await setupGlicko(loserId);
+
+  // Setup glicko
+  const glicko = new Glicko2();
+  const winnerplayer = glicko.makePlayer(
+    winnerdata.elo,
+    winnerdata.glicko_rd,
+    winnerdata.glicko_vol
+  );
+  const loserplayer = glicko.makePlayer(
+    loserdata.elo,
+    loserdata.glicko_rd,
+    loserdata.glicko_vol
+  );
+
+  // setup game history
+  const matches: [Player, Player, number][] = [];
+  for (let i = 0; i < winnerwins; i++) {
+    matches.push([winnerplayer, loserplayer, 1]); // Winner beat loser
+  }
+  for (let i = 0; i < loserwins; i++) {
+    matches.push([winnerplayer, loserplayer, 0]); // Winner lost to loser
+  }
+
+  // process results
+  glicko.updateRatings(matches);
 
   await interaction.reply({
-    content: `🏆 <@${winnerId}> wins the match! (+${elocalc.winnerChange} ELO) <@${loserId}> (${elocalc.loserChange} ELO)`,
+    content: `🏆 <@${winnerId}> wins the match! (+${
+      winnerplayer.getRating() - winnerdata.elo
+    } ELO) <@${loserId}> (${loserplayer.getRating() - loserdata.elo} ELO)`,
   });
 
   const blogchan = (await interaction.guild!.channels.fetch(
@@ -288,7 +320,11 @@ async function handleGameEnd(
       } (${loserdata.elo})`
     )
     .setDescription(
-      `🏆<@${winnerId}> defeats <@${loserId}> with score **${winnerwins} - ${loserwins}**!\n\n📊ELO Change: +${elocalc.winnerChange} for <@${winnerId}>, ${elocalc.loserChange} for <@${loserId}>`
+      `🏆<@${winnerId}> defeats <@${loserId}> with score **${winnerwins} - ${loserwins}**!\n\n📊ELO Change: +${
+        winnerplayer.getRating() - winnerdata.elo
+      } for <@${winnerId}>, ${
+        loserplayer.getRating() - loserdata.elo
+      } for <@${loserId}>`
     )
     .setTimestamp(new Date());
 
@@ -297,7 +333,7 @@ async function handleGameEnd(
     embeds: [embed],
   });
 
-  await persistBattleLog(battles, elocalc, winnerId, loserId);
+  await persistBattleLog(battles, winnerplayer, loserplayer, winnerId, loserId);
 
   // Delete match channel
   if (

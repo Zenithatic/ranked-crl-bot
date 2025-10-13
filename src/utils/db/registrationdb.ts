@@ -12,6 +12,7 @@ import { cards } from "../data/cards";
 import { PlayerData } from "../classes_types/PlayerData";
 import { BattleLog } from "../classes_types/BattleLog";
 import { EloChange } from "../classes_types/EloChange";
+import { Player } from "glicko2.ts";
 
 const REGION = process.env.AWS_REGION || "us-east-1";
 const REGISTRATION_TABLE_NAME = "ranked_crl_registration_table";
@@ -194,7 +195,8 @@ async function updateUserData(
 
 async function persistBattleLog(
   battleLog: BattleLog[],
-  eloChange: EloChange,
+  winnerplayer: Player,
+  loserplayer: Player,
   winnerId: string,
   loserId: string
 ) {
@@ -218,9 +220,16 @@ async function persistBattleLog(
     loserpast20 = loserpast20.slice(0, 20);
   }
 
+  let winnerpg = false;
+  if (winnerold.placement_games > 0) {
+    winnerpg = true;
+  }
   const updatewinnerres = await updateUserData(winnerId, {
     current_opponent: "",
-    elo: winnerold.elo + eloChange.winnerChange,
+    elo: Math.max(0, winnerplayer.getRating()),
+    placement_games: winnerpg ? winnerold.placement_games - 1 : 0,
+    glicko_rd: winnerpg ? 350 : winnerplayer.getRd(),
+    glicko_vol: winnerplayer.getVol(),
     in_game: false,
     past_20_games: JSON.stringify(winnerpast20),
     wins: winnerold.wins + 1,
@@ -232,9 +241,16 @@ async function persistBattleLog(
     return false;
   }
 
+  let loserpg = false;
+  if (loserold.placement_games > 0) {
+    loserpg = true;
+  }
   const updateloserres = await updateUserData(loserId, {
     current_opponent: undefined,
-    elo: Math.max(0, loserold.elo + eloChange.loserChange),
+    elo: Math.max(0, loserplayer.getRating()),
+    placement_games: loserpg ? loserold.placement_games - 1 : 0,
+    glicko_rd: loserpg ? 350 : loserplayer.getRd(),
+    glicko_vol: loserplayer.getVol(),
     in_game: false,
     past_20_games: JSON.stringify(loserpast20),
     losses: loserold.losses + 1,
@@ -333,6 +349,27 @@ async function fetchTopPlayers(limit: number): Promise<PlayerData[]> {
   return sortedPlayers.slice(0, limit);
 }
 
+async function setupGlicko(discordId: string) {
+  const userData = await getUserData(discordId);
+
+  if (!userData) {
+    console.error(`User with ID ${discordId} not found for Glicko setup.`);
+    return false;
+  }
+
+  if (userData.glicko_rd) {
+    return true; // Glicko already set up
+  }
+
+  const res = await updateUserData(discordId, {
+    glicko_rd: 350,
+    glicko_vol: 0.06,
+    placement_games: 5,
+  });
+
+  return res;
+}
+
 export {
   initiateRegistration,
   getUserData,
@@ -343,4 +380,5 @@ export {
   finishRegistration,
   getPlayerRank,
   fetchTopPlayers,
+  setupGlicko,
 };
