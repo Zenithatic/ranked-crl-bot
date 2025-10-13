@@ -3,7 +3,7 @@ import {
   COOLDOWN_TIMES,
   CooldownManager,
 } from "../../utils/classes_types/cooldown";
-import { finishRegistration, getUserData } from "../../utils/db/registrationdb";
+import { getUserData, updateUserData } from "../../utils/db/registrationdb";
 import {
   commandCheck,
   cmdVerifiedCheck,
@@ -88,7 +88,7 @@ module.exports = {
         console.error("Error setting nickname:", error);
       }
 
-      const res = await finishRegistration(userId);
+      const res = await updateUserData(userId, { verified: true });
       if (!res) {
         await interaction.reply({
           content:

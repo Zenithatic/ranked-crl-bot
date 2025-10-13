@@ -17,8 +17,14 @@ const cooldown = new CooldownManager(COOLDOWN_TIMES.THIRTY_SECONDS);
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("syncverifications")
-    .setDescription("Force synchronize verifications for all users.")
+    .setName("resetelo")
+    .setDescription("Force reset ELO for all users.")
+    .addNumberOption((option) =>
+      option
+        .setName("elo")
+        .setDescription("The ELO to reset all users to. Default is 1000.")
+        .setRequired(false)
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator), // Allow only admins
   async execute(interaction: ChatInputCommandInteraction) {
     // Check if command is used validly
@@ -27,6 +33,8 @@ module.exports = {
 
     // defer
     await interaction.deferReply({ ephemeral: true });
+
+    const newElo = interaction.options.getNumber("elo") || 1500;
 
     try {
       // Fetch all members with verified users in the database
@@ -51,12 +59,10 @@ module.exports = {
 
       for (const member of verifiedMembers.values()) {
         const userId = member.user.id;
-        const res = await updateUserData(userId, { verified: true });
+        const res = await updateUserData(userId, { elo: newElo });
 
         if (!res) {
-          console.error(
-            `Failed to synchronize verification for user ID: ${userId}`
-          );
+          console.error(`Failed to update elo for user ID: ${userId}`);
         } else {
           successCount++;
         }
@@ -66,19 +72,19 @@ module.exports = {
         // update progress every 10 users
         if (processedCount % 10 === 0) {
           await interaction.editReply({
-            content: `Synchronizing... ${processedCount}/${totalMembers} verified users processed.`,
+            content: `Updating... ${processedCount}/${totalMembers} users elos processed.`,
           });
         }
       }
 
       // final result
       await interaction.editReply({
-        content: `✅ Synchronization complete! Successfully synced ${successCount} out of ${totalMembers} verified users.`,
+        content: `✅ Updating complete! Successfully updated ${successCount} out of ${totalMembers} users' elos.`,
       });
     } catch (error) {
       console.error("Sync error:", error);
       await interaction.editReply({
-        content: "❌ An error occurred during synchronization.",
+        content: "❌ An error occurred during elo updating.",
       });
     }
   },

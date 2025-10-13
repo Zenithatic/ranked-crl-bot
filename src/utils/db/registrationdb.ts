@@ -267,24 +267,6 @@ async function persistBattleLog(
   return true;
 }
 
-async function terminateGame(discordId: string) {
-  // Update user data to reflect that they are no longer in a game
-  const res = await updateUserData(discordId, {
-    in_game: false,
-    current_opponent: "",
-  });
-
-  return res;
-}
-
-async function finishRegistration(discordId: string) {
-  const res = await updateUserData(discordId, {
-    verified: true,
-  });
-
-  return res;
-}
-
 async function getPlayerRank(discordId: string): Promise<string> {
   const cachedData = await getVerifiedPlayers();
   let verifiedPlayers;
@@ -378,9 +360,8 @@ export {
   playerJoinGame,
   persistBattleLog,
   setFriendLink,
-  terminateGame,
-  finishRegistration,
   getPlayerRank,
   fetchTopPlayers,
   setupGlicko,
+  updateUserData,
 };

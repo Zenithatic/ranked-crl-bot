@@ -10,7 +10,7 @@ import {
   COOLDOWN_TIMES,
 } from "../../utils/classes_types/cooldown";
 import { commandCheck } from "../../utils/functions/interactionchecks";
-import { getUserData, terminateGame } from "../../utils/db/registrationdb";
+import { getUserData, updateUserData } from "../../utils/db/registrationdb";
 dotenv.config();
 
 // Create a cooldown manager for this command with 30-second cooldown
@@ -53,8 +53,14 @@ module.exports = {
     }
 
     // Terminate game for both players
-    await terminateGame(player1id);
-    await terminateGame(player2id);
+    await updateUserData(player1id, {
+      in_game: false,
+      current_opponent: "",
+    });
+    await updateUserData(player2id, {
+      in_game: false,
+      current_opponent: "",
+    });
 
     // Delete match channel
     if (

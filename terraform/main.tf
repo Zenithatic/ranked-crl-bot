@@ -1,7 +1,7 @@
 # Configure Terraform settings and required providers
 terraform {
   required_version = ">= 1.0"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -11,7 +11,7 @@ terraform {
 
   backend "s3" {
     bucket         = "rankedcrl-tf-state-bucket"
-    key            = "terraform.tfstate"
+    key            = "rankedcrl-bot/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "rankedcrl-tf-lock-table"
     encrypt        = true
