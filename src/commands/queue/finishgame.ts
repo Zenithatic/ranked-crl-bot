@@ -16,7 +16,6 @@ import {
   setupGlicko,
 } from "../../utils/db/registrationdb";
 import { getBattleLogs } from "../../utils/data/api";
-import { calculateEloChange } from "../../utils/functions/elocalc";
 import { BattleLog } from "../../utils/classes_types/BattleLog";
 import { PlayerData } from "../../utils/classes_types/PlayerData";
 import { Glicko2, Player } from "glicko2.ts";

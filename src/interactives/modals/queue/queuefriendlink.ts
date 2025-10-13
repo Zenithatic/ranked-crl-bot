@@ -64,6 +64,12 @@ module.exports = {
         const player1elo = player1data.elo;
         const player2elo = player2data.elo;
 
+        // Fetch guild members to ensure they're cached
+        const player1Member = await interaction.guild!.members.fetch(userId);
+        const player2Member = await interaction.guild!.members.fetch(
+          result.match.discordId
+        );
+
         // create private channel only for the two players to discuss
         const newchannel = await interaction.guild!.channels.create({
           name: `match-${userId}-${result.match.discordId}`,
@@ -76,6 +82,10 @@ module.exports = {
         const verifiedRole = interaction.guild!.roles.cache.find(
           (role) => role.name === "Verified"
         );
+        const modRole = interaction.guild!.roles.cache.find(
+          (role) => role.name === "Mod"
+        );
+
         await newchannel.permissionOverwrites.set([
           {
             id: interaction.guild!.roles.everyone.id, // Deny everyone
@@ -86,7 +96,7 @@ module.exports = {
             deny: [PermissionFlagsBits.ViewChannel],
           },
           {
-            id: userId, // Allow player 1
+            id: player1Member, // Allow player 1
             allow: [
               PermissionFlagsBits.ViewChannel,
               PermissionFlagsBits.SendMessages,
@@ -94,7 +104,7 @@ module.exports = {
             ],
           },
           {
-            id: result.match.discordId, // Allow player 2
+            id: player2Member, // Allow player 2
             allow: [
               PermissionFlagsBits.ViewChannel,
               PermissionFlagsBits.SendMessages,
@@ -102,9 +112,7 @@ module.exports = {
             ],
           },
           {
-            id: interaction.guild!.roles.cache.find(
-              (role) => role.name === "Mod"
-            )!.id, // allow mods
+            id: modRole!.id, // allow mods
             allow: [
               PermissionFlagsBits.ViewChannel,
               PermissionFlagsBits.SendMessages,

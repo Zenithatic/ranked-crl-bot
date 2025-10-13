@@ -11,7 +11,6 @@ import { getVerifiedPlayers, setVerifiedPlayers } from "../cache/queuecache";
 import { cards } from "../data/cards";
 import { PlayerData } from "../classes_types/PlayerData";
 import { BattleLog } from "../classes_types/BattleLog";
-import { EloChange } from "../classes_types/EloChange";
 import { Player } from "glicko2.ts";
 
 const REGION = process.env.AWS_REGION || "us-east-1";
