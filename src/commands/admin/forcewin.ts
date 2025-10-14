@@ -109,12 +109,13 @@ module.exports = {
     // process results
     glicko.updateRatings(matches);
 
+    const winnerChange = Math.round(winnerplayer.getRating() - winnerdata.elo);
+    const loserChange = Math.round(loserplayer.getRating() - loserdata.elo);
+
     await interaction.reply({
-      content: `🏆 <@${winnerId}> wins the match! (+${Math.round(
-        winnerplayer.getRating() - winnerdata.elo
-      )} ELO) <@${loserId}> (${Math.round(
-        loserplayer.getRating() - loserdata.elo
-      )} ELO)`,
+      content: `🏆 <@${winnerId}> wins the match! (${
+        winnerChange > 0 ? "+" : ""
+      }${winnerChange} ELO) <@${loserId}> (${loserChange} ELO)`,
     });
 
     const blogchan = (await interaction.guild!.channels.fetch(
@@ -131,11 +132,11 @@ module.exports = {
         } (${loserdata.elo})`
       )
       .setDescription(
-        `🏆<@${winnerId}> defeats <@${loserId}> with score **${1} - ${0}** (force win)!\n\n📊ELO Change: +${Math.round(
-          winnerplayer.getRating() - winnerdata.elo
-        )} for <@${winnerId}>, ${Math.round(
-          loserplayer.getRating() - loserdata.elo
-        )} for <@${loserId}>`
+        `🏆<@${winnerId}> defeats <@${loserId}> with score **1 - 0** (forced win)!\n\n📊ELO Change: ${
+          winnerChange > 0 ? "+" + winnerChange : winnerChange
+        } for <@${winnerId}>, ${
+          loserChange > 0 ? "+" + loserChange : loserChange
+        } for <@${loserId}>`
       )
       .setTimestamp(new Date());
 

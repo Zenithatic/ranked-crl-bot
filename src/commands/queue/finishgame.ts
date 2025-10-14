@@ -287,24 +287,26 @@ async function handleGameEnd(
     loserdata.glicko_vol
   );
 
-  // setup game history
+  // setup game history (count entire bo3 as one game)
   const matches: [Player, Player, number][] = [];
-  for (let i = 0; i < winnerwins; i++) {
-    matches.push([winnerplayer, loserplayer, 1]); // Winner beat loser
-  }
-  for (let i = 0; i < loserwins; i++) {
-    matches.push([winnerplayer, loserplayer, 0]); // Winner lost to loser
+  if (winnerwins > loserwins) {
+    matches.push([winnerplayer, loserplayer, 1]);
+  } else {
+    matches.push([winnerplayer, loserplayer, 0]);
   }
 
   // process results
   glicko.updateRatings(matches);
 
+  const winnerChange = Math.round(winnerplayer.getRating() - winnerdata.elo);
+  const loserChange = Math.round(loserplayer.getRating() - loserdata.elo);
+
   await interaction.reply({
-    content: `🏆 <@${winnerId}> wins the match! (+${Math.round(
-      winnerplayer.getRating() - winnerdata.elo
-    )} ELO) <@${loserId}> (${Math.round(
-      loserplayer.getRating() - loserdata.elo
-    )} ELO)`,
+    content: `🏆 <@${winnerId}> wins the match! (${
+      winnerChange > 0 ? "+" + winnerChange : winnerChange
+    } ELO) <@${loserId}> (${
+      loserChange > 0 ? "+" + loserChange : loserChange
+    } ELO)`,
   });
 
   const blogchan = (await interaction.guild!.channels.fetch(
@@ -321,11 +323,11 @@ async function handleGameEnd(
       } (${loserdata.elo})`
     )
     .setDescription(
-      `🏆<@${winnerId}> defeats <@${loserId}> with score **${winnerwins} - ${loserwins}**!\n\n📊ELO Change: +${Math.round(
-        winnerplayer.getRating() - winnerdata.elo
-      )} for <@${winnerId}>, ${Math.round(
-        loserplayer.getRating() - loserdata.elo
-      )} for <@${loserId}>`
+      `🏆<@${winnerId}> defeats <@${loserId}> with score **${winnerwins} - ${loserwins}**!\n\n📊ELO Change: ${
+        winnerChange > 0 ? "+" + winnerChange : winnerChange
+      } for <@${winnerId}>, ${
+        loserChange > 0 ? "+" + loserChange : loserChange
+      } for <@${loserId}>`
     )
     .setTimestamp(new Date());
 
