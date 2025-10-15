@@ -6,20 +6,18 @@ import {
   SlashCommandBuilder,
   TextChannel,
 } from "discord.js";
-import dotenv from "dotenv";
+import { Glicko2, Player } from "glicko2.ts";
+import { BattleLog } from "../../utils/classes_types/BattleLog";
 import {
-  CooldownManager,
   COOLDOWN_TIMES,
+  CooldownManager,
 } from "../../utils/classes_types/cooldown";
-import { commandCheck } from "../../utils/functions/interactionchecks";
 import {
   getUserData,
   persistBattleLog,
   setupGlicko,
 } from "../../utils/db/registrationdb";
-import { Glicko2, Player } from "glicko2.ts";
-import { BattleLog } from "../../utils/classes_types/BattleLog";
-dotenv.config();
+import { commandCheck } from "../../utils/functions/interactionchecks";
 
 const battleLogChannel = "1424129349019242597";
 

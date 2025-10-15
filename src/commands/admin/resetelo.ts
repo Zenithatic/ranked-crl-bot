@@ -3,14 +3,12 @@ import {
   PermissionFlagsBits,
   SlashCommandBuilder,
 } from "discord.js";
-import dotenv from "dotenv";
 import {
-  CooldownManager,
   COOLDOWN_TIMES,
+  CooldownManager,
 } from "../../utils/classes_types/cooldown";
-import { commandCheck } from "../../utils/functions/interactionchecks";
 import { updateUserData } from "../../utils/db/registrationdb";
-dotenv.config();
+import { commandCheck } from "../../utils/functions/interactionchecks";
 
 // Create a cooldown manager for this command with 30-second cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.THIRTY_SECONDS);

@@ -1,9 +1,9 @@
 // Imports
-import { Client, GatewayIntentBits, Collection, TextChannel } from "discord.js";
+import { Client, GatewayIntentBits } from "discord.js";
 import dotenv from "dotenv";
-dotenv.config();
-import { printLeaderboard } from "./utils/functions/printleaderboard";
 import { loadButtons, loadCommands, loadModals } from "./loaders";
+import { printLeaderboard } from "./utils/functions/printleaderboard";
+dotenv.config();
 
 // Create a new client instance with necessary intents (basically permissions)
 const client = new Client({

@@ -1,10 +1,10 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { getUserData, getPlayerRank } from "../../utils/db/registrationdb";
-import { commandCheck } from "../../utils/functions/interactionchecks";
 import {
   COOLDOWN_TIMES,
   CooldownManager,
 } from "../../utils/classes_types/cooldown";
+import { getPlayerRank, getUserData } from "../../utils/db/registrationdb";
+import { commandCheck } from "../../utils/functions/interactionchecks";
 
 const cooldown = new CooldownManager(COOLDOWN_TIMES.TEN_SECONDS);
 
