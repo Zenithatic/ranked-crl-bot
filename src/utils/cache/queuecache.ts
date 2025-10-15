@@ -1,9 +1,6 @@
 // Redis cache functions for player queue
 import Redis from "ioredis";
-import dotenv from "dotenv";
 import { getUserData, playerJoinGame } from "../db/registrationdb";
-dotenv.config();
-
 const P = "ranked-crl-valkey-rg.miaymu.ng.0001.use1.cache.amazonaws.com:6379";
 let redis: Redis | undefined = undefined;
 

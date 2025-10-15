@@ -5,20 +5,20 @@ import {
   SlashCommandBuilder,
   TextChannel,
 } from "discord.js";
+import { Glicko2, Player } from "glicko2.ts";
+import { BattleLog } from "../../utils/classes_types/BattleLog";
 import {
-  CooldownManager,
   COOLDOWN_TIMES,
+  CooldownManager,
 } from "../../utils/classes_types/cooldown";
-import { commandCheck } from "../../utils/functions/interactionchecks";
+import { PlayerData } from "../../utils/classes_types/PlayerData";
+import { getBattleLogs } from "../../utils/data/api";
 import {
   getUserData,
   persistBattleLog,
   setupGlicko,
 } from "../../utils/db/registrationdb";
-import { getBattleLogs } from "../../utils/data/api";
-import { BattleLog } from "../../utils/classes_types/BattleLog";
-import { PlayerData } from "../../utils/classes_types/PlayerData";
-import { Glicko2, Player } from "glicko2.ts";
+import { commandCheck } from "../../utils/functions/interactionchecks";
 
 // Create a cooldown manager for this command with 1-minute cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
