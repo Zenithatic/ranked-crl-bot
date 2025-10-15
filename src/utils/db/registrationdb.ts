@@ -8,10 +8,6 @@ import {
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { Player } from "glicko2.ts";
-import { getVerifiedPlayers, setVerifiedPlayers } from "../cache/queuecache";
-import { BattleLog } from "../classes_types/BattleLog";
-import { PlayerData } from "../classes_types/PlayerData";
-import { cards } from "../data/cards";
 
 import { getVerifiedPlayers, setVerifiedPlayers } from "../cache/queuecache";
 import { BattleLog } from "../classes_types/BattleLog";
