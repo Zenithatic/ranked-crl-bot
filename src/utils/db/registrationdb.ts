@@ -1,17 +1,17 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
-  PutCommand,
   GetCommand,
-  UpdateCommand,
+  PutCommand,
   QueryCommand,
   ScanCommand,
+  UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { getVerifiedPlayers, setVerifiedPlayers } from "../cache/queuecache";
-import { cards } from "../data/cards";
-import { PlayerData } from "../classes_types/PlayerData";
-import { BattleLog } from "../classes_types/BattleLog";
 import { Player } from "glicko2.ts";
+import { getVerifiedPlayers, setVerifiedPlayers } from "../cache/queuecache";
+import { BattleLog } from "../classes_types/BattleLog";
+import { PlayerData } from "../classes_types/PlayerData";
+import { cards } from "../data/cards";
 
 const REGION = process.env.AWS_REGION || "us-east-1";
 const REGISTRATION_TABLE_NAME = "ranked_crl_registration_table";
@@ -355,13 +355,13 @@ async function setupGlicko(discordId: string) {
 }
 
 export {
-  initiateRegistration,
-  getUserData,
-  playerJoinGame,
-  persistBattleLog,
-  setFriendLink,
-  getPlayerRank,
   fetchTopPlayers,
+  getPlayerRank,
+  getUserData,
+  initiateRegistration,
+  persistBattleLog,
+  playerJoinGame,
+  setFriendLink,
   setupGlicko,
   updateUserData,
 };
