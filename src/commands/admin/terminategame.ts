@@ -125,6 +125,9 @@ module.exports = {
       current_opponent: "",
     });
 
+    // Log match channel details to S3
+    await logMatchChannel(interaction.channel as TextChannel);
+
     // Delete match channel
     if (
       interaction.channel &&

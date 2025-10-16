@@ -19,6 +19,7 @@ import {
   setupGlicko,
 } from "../../utils/db/registrationdb";
 import { commandCheck } from "../../utils/functions/interactionchecks";
+import { logMatchChannel } from "../../utils/s3/matchlog";
 
 // Create a cooldown manager for this command with 1-minute cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
@@ -337,6 +338,9 @@ async function handleGameEnd(
   });
 
   await persistBattleLog(battles, winnerplayer, loserplayer, winnerId, loserId);
+
+  // Log match channel details to S3
+  await logMatchChannel(interaction.channel as TextChannel);
 
   // Delete match channel
   if (
