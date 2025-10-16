@@ -1,6 +1,6 @@
 // Imports
-import { getUserData } from "@/src/utils/db/registrationdb";
-import { handleGameEnd } from "@/src/utils/functions/handleGameEnd";
+import { getUserData } from "../../utils/db/registrationdb";
+import { handleGameEnd } from "../../utils/functions/handleGameEnd";
 import {
   ChannelType,
   ChatInputCommandInteraction,

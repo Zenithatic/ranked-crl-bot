@@ -4,15 +4,15 @@ import {
   ChatInputCommandInteraction,
   SlashCommandBuilder,
 } from "discord.js";
-import { BattleLog } from "@/src/utils/classes_types/BattleLog";
+import { BattleLog } from "../../utils/classes_types/BattleLog";
 import {
   COOLDOWN_TIMES,
   CooldownManager,
-} from "@/src/utils/classes_types/cooldown";
-import { getBattleLogs } from "@/src/utils/data/api";
-import { getUserData } from "@/src/utils/db/registrationdb";
-import { commandCheck } from "@/src/utils/functions/interactionchecks";
-import { handleGameEnd } from "@/src/utils/functions/handleGameEnd";
+} from "../../utils/classes_types/cooldown";
+import { getBattleLogs } from "../../utils/data/api";
+import { getUserData } from "../../utils/db/registrationdb";
+import { commandCheck } from "../../utils/functions/interactionchecks";
+import { handleGameEnd } from "../../utils/functions/handleGameEnd";
 
 // Create a cooldown manager for this command with 1-minute cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);

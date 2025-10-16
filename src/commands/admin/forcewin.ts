@@ -5,8 +5,8 @@ import {
   PermissionFlagsBits,
   SlashCommandBuilder,
 } from "discord.js";
-import { getUserData } from "@/src/utils/db/registrationdb";
-import { handleGameEnd } from "@/src/utils/functions/handleGameEnd";
+import { getUserData } from "../../utils/db/registrationdb";
+import { handleGameEnd } from "../../utils/functions/handleGameEnd";
 
 module.exports = {
   data: new SlashCommandBuilder()

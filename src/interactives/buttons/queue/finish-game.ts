@@ -3,12 +3,12 @@ import { ButtonInteraction, ChannelType } from "discord.js";
 import {
   CooldownManager,
   COOLDOWN_TIMES,
-} from "@/src/utils/classes_types/cooldown";
-import { getBattleLogs } from "@/src/utils/data/api";
-import { buttonCheck } from "@/src/utils/functions/interactionchecks";
-import { getUserData } from "@/src/utils/db/registrationdb";
-import { BattleLog } from "@/src/utils/classes_types/BattleLog";
-import { handleGameEnd } from "@/src/utils/functions/handleGameEnd";
+} from "../../../utils/classes_types/cooldown";
+import { getBattleLogs } from "../../../utils/data/api";
+import { buttonCheck } from "../../../utils/functions/interactionchecks";
+import { getUserData } from "../../../utils/db/registrationdb";
+import { BattleLog } from "../../../utils/classes_types/BattleLog";
+import { handleGameEnd } from "../../../utils/functions/handleGameEnd";
 // Create a cooldown manager for this command with thirty-second cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.THIRTY_SECONDS);
 
