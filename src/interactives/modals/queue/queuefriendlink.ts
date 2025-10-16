@@ -144,7 +144,8 @@ module.exports = {
             {
               title: `Match: #${playertag1} (${player1elo} elo) vs #${playertag2} (${player2elo} elo)`,
               description: `<@${result.match.discordId}> has been matched with <@${userId}>!\n\n
-                Please read <#1426001621879357451> for instructions`,
+                Please read <#1426001621879357451> for instructions\n
+                Use the buttons on this message to manage the game.`,
               color: 0x00ff00,
             },
           ],
