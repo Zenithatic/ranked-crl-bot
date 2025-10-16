@@ -16,7 +16,7 @@ module.exports = {
     const emptiedUsers = await emptyQueue();
     // Notify users that the queue has been emptied
     for (const user of emptiedUsers) {
-      const id = JSON.parse(user).id;
+      const id = JSON.parse(user).discordId;
       const member = await interaction.guild?.members.fetch(id);
       if (member) {
         await member.send(
