@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 import { loadButtons, loadCommands, loadModals } from "./loaders";
 import { printLeaderboard } from "./utils/functions/printleaderboard";
+import { emptyQueue } from "./utils/cache/queuecache";
 
 dotenv.config();
 
@@ -31,6 +32,24 @@ client.once("clientReady", async () => {
   setInterval(async () => {
     await printLeaderboard(client);
   }, 60 * 60 * 12 * 1000);
+
+  // Clear queue every hour and notify users
+  setInterval(async () => {
+    const emptiedUsers = await emptyQueue();
+    // Notify users that the queue has been emptied
+    for (const user of emptiedUsers) {
+      const id = JSON.parse(user).id;
+      const member = await client.guilds.cache
+        .get(process.env.GUILD_ID!)
+        ?.members.fetch(id)
+        .catch(() => null);
+      if (member) {
+        await member.send(
+          "Your place in the queue has been cleared from the hourly reset. Please rejoin the queue if you wish to be matched."
+        );
+      }
+    }
+  }, 60 * 60 * 1 * 1000);
 });
 
 // Handle interactions

@@ -182,6 +182,20 @@ async function unqueuePlayer(discordId: string) {
   }
 }
 
+/**
+ * Empty the entire player queue
+ * @returns The queue before emptying: array of { discordId, playerTag } objects
+ */
+async function emptyQueue() {
+  initRedis();
+  if (!redis) {
+    throw new Error("Redis client not initialized");
+  }
+  const queue = await redis.zrange("playerQueueStandard", 0, -1);
+  await redis.zremrangebyrank("playerQueueStandard", 0, -1);
+  return queue;
+}
+
 // Exports
 export {
   ReturnMessage,
@@ -189,4 +203,5 @@ export {
   unqueuePlayer,
   getVerifiedPlayers,
   setVerifiedPlayers,
+  emptyQueue,
 };
