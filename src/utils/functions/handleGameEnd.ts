@@ -107,7 +107,7 @@ async function handleGameEnd(
   await persistBattleLog(battles, winnerplayer, loserplayer, winnerId, loserId);
 
   // Log match channel details to S3
-  await logMatchChannel(interaction.channel as TextChannel);
+  await logMatchChannel(interaction.channel as TextChannel, endType, battles);
 
   // Delete match channel
   if (

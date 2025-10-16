@@ -2,6 +2,7 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { TextChannel } from "discord.js";
 import dotenv from "dotenv";
+import { BattleLog } from "../classes_types/BattleLog";
 dotenv.config();
 
 // Initialize S3 client
@@ -13,8 +14,14 @@ const BUCKET_NAME = "rankedcrl-match-channel-logs";
 /**
  * Log a match channel's details to rankedcrl-match-channel-logs S3
  * @param channel: The Discord text channel to log
+ * @param endType: The type of match end ("Finished", "Forced Win", "Terminated")
+ * @param battleLog: Array of battle logs from the match
  */
-async function logMatchChannel(channel: TextChannel): Promise<boolean> {
+async function logMatchChannel(
+  channel: TextChannel,
+  endType: "Finished" | "Forced Win" | "Terminated",
+  battleLog: BattleLog[]
+): Promise<boolean> {
   // Specify the folder for the day the channel was created
   const date = channel.createdAt;
   const year = date.getFullYear();
@@ -44,9 +51,11 @@ async function logMatchChannel(channel: TextChannel): Promise<boolean> {
 
   // Prepare log data as .txt
   let logData = `Match Channel Log: ${channel.name}\n`;
+  logData += `End Type: ${endType}\n`;
   logData += `Created At: ${channel.createdAt.toISOString()}\n`;
   logData += `Players: <${player1id}> (${player1?.displayName}) (${player1?.user.username})`;
-  logData += `vs <${player2id}> (${player2?.displayName}) (${player2?.user.username})\n`;
+  logData += `vs <${player2id}> (${player2?.displayName}) (${player2?.user.username})\n\n`;
+  logData += `Battle Log: ${JSON.stringify(battleLog, null, 2)}\n\n`;
   logData += `\nMessages:\n\n`;
 
   for (const [, message] of sortedMessages) {
