@@ -58,13 +58,13 @@ module.exports = {
     ) {
       try {
         const messages = await interaction.channel.messages.fetch({
-          limit: 100,
+          limit: 25,
         });
         const messageArray = messages
           .filter((msg) => !msg.author.bot) // Filter out bot messages
           .sort((a, b) => a.createdTimestamp - b.createdTimestamp) // Sort by creation time
           .map((msg) => `${msg.author.displayName}: ${msg.content}`)
-          .slice(0, 20); // Limit to last 20 messages
+          .slice(0, 25); // Limit to last 25 messages
 
         messageLog = messageArray.join("\n");
         if (messageLog.length === 0) {
