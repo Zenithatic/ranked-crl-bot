@@ -24,5 +24,7 @@ module.exports = {
         );
       }
     }
+
+    await interaction.reply({ content: "✅ Queue has been cleared." });
   },
 };
