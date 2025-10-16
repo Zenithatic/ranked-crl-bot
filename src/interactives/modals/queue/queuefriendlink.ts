@@ -153,6 +153,11 @@ module.exports = {
           content: `✅ ${result.message}`,
           ephemeral: true,
         });
+        // DM user
+        const user = await interaction.guild!.members.fetch(userId);
+        await user.send({
+          content: `You have been added to the queue! You will be matched with someone when possible. \n Please use this message as the most accurate reference to your queue status.`,
+        });
       }
     } else {
       // Failure when queueing
