@@ -1,30 +1,21 @@
 // Imports
+import { ButtonInteraction, ChannelType } from "discord.js";
 import {
-  ChannelType,
-  ChatInputCommandInteraction,
-  SlashCommandBuilder,
-} from "discord.js";
-import { BattleLog } from "@/src/utils/classes_types/BattleLog";
-import {
-  COOLDOWN_TIMES,
   CooldownManager,
+  COOLDOWN_TIMES,
 } from "@/src/utils/classes_types/cooldown";
 import { getBattleLogs } from "@/src/utils/data/api";
+import { buttonCheck } from "@/src/utils/functions/interactionchecks";
 import { getUserData } from "@/src/utils/db/registrationdb";
-import { commandCheck } from "@/src/utils/functions/interactionchecks";
+import { BattleLog } from "@/src/utils/classes_types/BattleLog";
 import { handleGameEnd } from "@/src/utils/functions/handleGameEnd";
-
-// Create a cooldown manager for this command with 1-minute cooldown
-const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
+// Create a cooldown manager for this command with thirty-second cooldown
+const cooldown = new CooldownManager(COOLDOWN_TIMES.THIRTY_SECONDS);
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("finishgame")
-    .setDescription("Evaluate the current ranked game.")
-    .setDefaultMemberPermissions(null), // Allow all users to use this command
-  async execute(interaction: ChatInputCommandInteraction) {
-    // Check if command is used validly
-    if (!(await commandCheck(interaction, cooldown, true))) return;
+  customId: "finish-game",
+  async execute(interaction: ButtonInteraction) {
+    if (!(await buttonCheck(interaction, cooldown, false))) return;
 
     // Check if channel is a match channel
     if (

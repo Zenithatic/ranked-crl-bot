@@ -9,8 +9,8 @@ import {
 import {
   CooldownManager,
   COOLDOWN_TIMES,
-} from "../../../utils/classes_types/cooldown";
-import { buttonCheck } from "../../../utils/functions/interactionchecks";
+} from "@/src/utils/classes_types/cooldown";
+import { buttonCheck } from "@/src/utils/functions/interactionchecks";
 
 // Create a cooldown manager for this button with 30-second cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.THIRTY_SECONDS);

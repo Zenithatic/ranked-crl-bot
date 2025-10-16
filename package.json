@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsc && node deploy-commands.js && node build/index.js",
-    "build": "tsc",
+    "dev": "tsc && tsc-alias && node deploy-commands.js && node build/index.js",
+    "build": "tsc && tsc-alias",
     "start": "node build/index.js"
   },
   "keywords": [],
@@ -27,6 +27,7 @@
   "devDependencies": {
     "@types/node": "24.5.2",
     "ts-node": "10.9.2",
+    "tsc-alias": "^1.8.16",
     "typescript": "5.9.2"
   }
 }
