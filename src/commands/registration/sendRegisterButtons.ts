@@ -1,3 +1,4 @@
+// Imports
 import { ButtonBuilder } from "@discordjs/builders";
 import {
   ActionRowBuilder,
@@ -9,6 +10,7 @@ import {
   TextChannel,
 } from "discord.js";
 
+// Button row
 const row = new ActionRowBuilder().addComponents(
   new ButtonBuilder()
     .setCustomId("register")
@@ -20,6 +22,7 @@ const row = new ActionRowBuilder().addComponents(
     .setStyle(ButtonStyle.Secondary)
 );
 
+// Embed
 const embed = new EmbedBuilder()
   .setColor(0x0099ff)
   .setTitle("Register and Verify your Clash Royale Account")
@@ -33,6 +36,7 @@ module.exports = {
     .setDescription("Send the registration buttons.")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   async execute(interaction: ChatInputCommandInteraction) {
+    // Ensure command is used in a text channel
     const channel = interaction.channel;
     if (!channel) {
       await interaction.reply({
@@ -42,6 +46,8 @@ module.exports = {
       return;
     }
     const textchannel = channel as TextChannel;
+
+    // Send the embed with buttons
     await textchannel.send({ embeds: [embed], components: [row.toJSON()] });
     await interaction.reply({
       content: "✅ Registration buttons sent!",

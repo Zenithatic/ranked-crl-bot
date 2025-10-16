@@ -1,3 +1,4 @@
+// Imports
 import {
   ChannelType,
   ChatInputCommandInteraction,
@@ -9,21 +10,14 @@ import {
 import { Glicko2, Player } from "glicko2.ts";
 import { BattleLog } from "../../utils/classes_types/BattleLog";
 import {
-  COOLDOWN_TIMES,
-  CooldownManager,
-} from "../../utils/classes_types/cooldown";
-import {
   getUserData,
   persistBattleLog,
   setupGlicko,
 } from "../../utils/db/registrationdb";
-import { commandCheck } from "../../utils/functions/interactionchecks";
 import { logMatchChannel } from "../../utils/s3/matchlog";
+import { handleGameEnd } from "../../utils/functions/handleGameEnd";
 
 const battleLogChannel = "1424129349019242597";
-
-// Create a cooldown manager for this command with 30-second cooldown
-const cooldown = new CooldownManager(COOLDOWN_TIMES.THIRTY_SECONDS);
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -37,9 +31,6 @@ module.exports = {
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers), // Allow only people who can ban members to use this command
   async execute(interaction: ChatInputCommandInteraction) {
-    // Check if command is used validly
-    if (!(await commandCheck(interaction, cooldown, true))) return;
-
     // Check if channel is a match channel
     if (
       !interaction.channel ||
@@ -54,7 +45,7 @@ module.exports = {
       return;
     }
 
-    // Get player data
+    // Get player ids
     const player1id = interaction.channel.name.split("-")[1];
     const player2id = interaction.channel.name.split("-")[2];
 
@@ -71,6 +62,7 @@ module.exports = {
       return;
     }
 
+    // Get player data
     const winnerId = specifiedPlayer.id;
     const loserId = winnerId === player1id ? player2id : player1id;
     const winnerdata = await getUserData(winnerId);
@@ -84,85 +76,17 @@ module.exports = {
       return;
     }
 
-    // Setup glicko in db for players if not there
-    await setupGlicko(winnerId);
-    await setupGlicko(loserId);
-
-    // Setup glicko
-    const glicko = new Glicko2();
-    const winnerplayer = glicko.makePlayer(
-      winnerdata.elo,
-      winnerdata.glicko_rd,
-      winnerdata.glicko_vol
-    );
-    const loserplayer = glicko.makePlayer(
-      loserdata.elo,
-      loserdata.glicko_rd,
-      loserdata.glicko_vol
-    );
-
-    // setup game history
-    const matches: [Player, Player, number][] = [];
-    matches.push([winnerplayer, loserplayer, 1]);
-
-    // process results
-    glicko.updateRatings(matches);
-
-    const winnerChange = Math.round(winnerplayer.getRating() - winnerdata.elo);
-    const loserChange = Math.round(loserplayer.getRating() - loserdata.elo);
-
-    await interaction.reply({
-      content: `🏆 <@${winnerId}> wins the match! (${
-        winnerChange > 0 ? "+" : ""
-      }${winnerChange} ELO) <@${loserId}> (${loserChange} ELO)`,
-    });
-
-    const blogchan = (await interaction.guild!.channels.fetch(
-      battleLogChannel
-    )) as TextChannel;
-
-    const embed = new EmbedBuilder()
-      .setColor(0x0099ff)
-      .setTitle(
-        `Match Result: ${
-          (await interaction.guild!.members.fetch(winnerId)).displayName
-        } (${winnerdata.elo}) vs ${
-          (await interaction.guild!.members.fetch(loserId)).displayName
-        } (${loserdata.elo})`
-      )
-      .setDescription(
-        `🏆<@${winnerId}> defeats <@${loserId}> with score **1 - 0** (forced win)!\n\n📊ELO Change: ${
-          winnerChange > 0 ? "+" + winnerChange : winnerChange
-        } for <@${winnerId}>, ${
-          loserChange > 0 ? "+" + loserChange : loserChange
-        } for <@${loserId}>`
-      )
-      .setTimestamp(new Date());
-
-    await blogchan.send({
-      content: `<@${winnerId}> <@${loserId}>`,
-      embeds: [embed],
-    });
-
-    const battles: BattleLog[] = [];
-
-    await persistBattleLog(
-      battles,
-      winnerplayer,
-      loserplayer,
+    // Force win
+    handleGameEnd(
+      winnerdata,
+      loserdata,
+      1,
+      0,
       winnerId,
-      loserId
+      loserId,
+      [],
+      interaction,
+      "Forced Win"
     );
-
-    // Log match channel details to S3
-    await logMatchChannel(interaction.channel as TextChannel);
-
-    // Delete match channel
-    if (
-      interaction.channel &&
-      interaction.channel.type === ChannelType.GuildText
-    ) {
-      await interaction.channel.delete();
-    }
   },
 };

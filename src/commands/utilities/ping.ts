@@ -1,3 +1,4 @@
+// Imports
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 module.exports = {
@@ -6,7 +7,7 @@ module.exports = {
     .setDescription("Replies with Pong!")
     .setDefaultMemberPermissions(null), // Allow all users to use this command
   async execute(interaction: ChatInputCommandInteraction) {
-    // calculate ping
+    // Calculate ping
     const ping = Date.now() - interaction.createdTimestamp;
     await interaction.reply(`Pong! Latency is ${ping}ms`);
   },

@@ -1,3 +1,4 @@
+// Imports
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import {
   COOLDOWN_TIMES,
@@ -37,6 +38,7 @@ module.exports = {
       return;
     }
 
+    // Get user data from the database
     const userData = await getUserData(userId);
     if (!userData) {
       await interaction.reply({
@@ -49,6 +51,7 @@ module.exports = {
     // Get player ranking
     const ranking = await getPlayerRank(userId);
 
+    // Create and send the profile embed
     await interaction.reply({
       embeds: [
         {

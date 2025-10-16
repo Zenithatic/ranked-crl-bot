@@ -1,30 +1,21 @@
+// Imports
 import {
   ChannelType,
   ChatInputCommandInteraction,
-  EmbedBuilder,
   SlashCommandBuilder,
-  TextChannel,
 } from "discord.js";
-import { Glicko2, Player } from "glicko2.ts";
 import { BattleLog } from "../../utils/classes_types/BattleLog";
 import {
   COOLDOWN_TIMES,
   CooldownManager,
 } from "../../utils/classes_types/cooldown";
-import { PlayerData } from "../../utils/classes_types/PlayerData";
 import { getBattleLogs } from "../../utils/data/api";
-import {
-  getUserData,
-  persistBattleLog,
-  setupGlicko,
-} from "../../utils/db/registrationdb";
+import { getUserData } from "../../utils/db/registrationdb";
 import { commandCheck } from "../../utils/functions/interactionchecks";
-import { logMatchChannel } from "../../utils/s3/matchlog";
+import { handleGameEnd } from "../../utils/functions/handleGameEnd";
 
 // Create a cooldown manager for this command with 1-minute cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
-
-const battleLogChannel = "1424129349019242597";
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -50,6 +41,7 @@ module.exports = {
       return;
     }
 
+    // Get player ids and data
     const userId = interaction.user.id;
     const player1id = interaction.channel.name.split("-")[1];
     const player2id = interaction.channel.name.split("-")[2];
@@ -80,7 +72,7 @@ module.exports = {
     const rawbattles = await player1logs.json();
     let player1battles = [];
 
-    // add top battles against other player, after channel was created
+    // Add top battles against other player, after channel was created
     for (const battle of rawbattles) {
       const raw = battle.battleTime;
       const iso = raw.replace(
@@ -97,7 +89,7 @@ module.exports = {
       }
     }
 
-    // no battles found
+    // No battles found
     if (player1battles.length === 0) {
       interaction.reply({
         content: `❌ <@${player1id}> has not played against <@${player2id}> in their latest matches.`,
@@ -105,7 +97,7 @@ module.exports = {
       return;
     }
 
-    // reverse to get most oldest first
+    // Reverse to get most oldest first
     player1battles = player1battles.reverse();
 
     let battles: BattleLog[] = [];
@@ -118,6 +110,7 @@ module.exports = {
     const player1UsedCards: string[] = [];
     const player2UsedCards: string[] = [];
 
+    // Process battles
     for (const battle of player1battles) {
       // Break after processing the required number of battles
       if (validBattlesProcessed >= maxBattlesToCheck) {
@@ -156,11 +149,12 @@ module.exports = {
           }
         }
         if (!player2duped) {
-          // add cards to used arrays
+          // Add cards to used arrays
           player1UsedCards.push(...player1Cards);
           player2UsedCards.push(...player2Cards);
         }
 
+        // Log battle details
         battles.push({
           winnerTag: player1data.playerTag,
           loserTag: player2data.playerTag,
@@ -202,11 +196,12 @@ module.exports = {
           }
         }
         if (!player1duped) {
-          // add cards to used arrays
+          // Add cards to used arrays
           player1UsedCards.push(...player1Cards);
           player2UsedCards.push(...player2Cards);
         }
 
+        // Log battle details
         battles.push({
           winnerTag: player2data.playerTag,
           loserTag: player1data.playerTag,
@@ -219,7 +214,7 @@ module.exports = {
       }
     }
 
-    // Nobody wins yet
+    // Nobody wins yet, send details
     if (player1wins < 2 && player2wins < 2) {
       interaction.reply({
         content: `❌ Nobody between <@${player1id}> and <@${player2id}> has won yet.\n\n
@@ -235,6 +230,7 @@ module.exports = {
       return;
     }
 
+    // We have a winner, process results
     if (player1wins > player2wins) {
       await handleGameEnd(
         player1data,
@@ -244,7 +240,8 @@ module.exports = {
         player1id,
         player2id,
         battles,
-        interaction
+        interaction,
+        "Finished"
       );
     } else if (player2wins > player1wins) {
       await handleGameEnd(
@@ -255,98 +252,9 @@ module.exports = {
         player2id,
         player1id,
         battles,
-        interaction
+        interaction,
+        "Finished"
       );
     }
   },
 };
-
-async function handleGameEnd(
-  winnerdata: PlayerData,
-  loserdata: PlayerData,
-  winnerwins: number,
-  loserwins: number,
-  winnerId: string,
-  loserId: string,
-  battles: BattleLog[],
-  interaction: ChatInputCommandInteraction
-) {
-  // Setup glicko in db for players if not there
-  await setupGlicko(winnerId);
-  await setupGlicko(loserId);
-
-  // Setup glicko
-  const glicko = new Glicko2();
-  const winnerplayer = glicko.makePlayer(
-    winnerdata.elo,
-    winnerdata.glicko_rd,
-    winnerdata.glicko_vol
-  );
-  const loserplayer = glicko.makePlayer(
-    loserdata.elo,
-    loserdata.glicko_rd,
-    loserdata.glicko_vol
-  );
-
-  // setup game history (count entire bo3 as one game)
-  const matches: [Player, Player, number][] = [];
-  if (winnerwins > loserwins) {
-    matches.push([winnerplayer, loserplayer, 1]);
-  } else {
-    matches.push([winnerplayer, loserplayer, 0]);
-  }
-
-  // process results
-  glicko.updateRatings(matches);
-
-  const winnerChange = Math.round(winnerplayer.getRating() - winnerdata.elo);
-  const loserChange = Math.round(loserplayer.getRating() - loserdata.elo);
-
-  await interaction.reply({
-    content: `🏆 <@${winnerId}> wins the match! (${
-      winnerChange > 0 ? "+" + winnerChange : winnerChange
-    } ELO) <@${loserId}> (${
-      loserChange > 0 ? "+" + loserChange : loserChange
-    } ELO)`,
-  });
-
-  const blogchan = (await interaction.guild!.channels.fetch(
-    battleLogChannel
-  )) as TextChannel;
-
-  const embed = new EmbedBuilder()
-    .setColor(0x0099ff)
-    .setTitle(
-      `Match Result: ${
-        (await interaction.guild!.members.fetch(winnerId)).displayName
-      } (${winnerdata.elo}) vs ${
-        (await interaction.guild!.members.fetch(loserId)).displayName
-      } (${loserdata.elo})`
-    )
-    .setDescription(
-      `🏆<@${winnerId}> defeats <@${loserId}> with score **${winnerwins} - ${loserwins}**!\n\n📊ELO Change: ${
-        winnerChange > 0 ? "+" + winnerChange : winnerChange
-      } for <@${winnerId}>, ${
-        loserChange > 0 ? "+" + loserChange : loserChange
-      } for <@${loserId}>`
-    )
-    .setTimestamp(new Date());
-
-  await blogchan.send({
-    content: `<@${winnerId}> <@${loserId}>`,
-    embeds: [embed],
-  });
-
-  await persistBattleLog(battles, winnerplayer, loserplayer, winnerId, loserId);
-
-  // Log match channel details to S3
-  await logMatchChannel(interaction.channel as TextChannel);
-
-  // Delete match channel
-  if (
-    interaction.channel &&
-    interaction.channel.type === ChannelType.GuildText
-  ) {
-    await interaction.channel.delete();
-  }
-}

@@ -36,23 +36,23 @@ async function logMatchChannel(channel: TextChannel): Promise<boolean> {
     .fetch(player2id)
     .catch(() => null);
 
-  // Fetch channel messages and filter out bot messages
+  // Fetch channel messages
   const messages = await channel.messages.fetch();
-  const sortedMessages = messages
-    .filter((message) => !message.author.bot)
-    .sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+  const sortedMessages = messages.sort(
+    (a, b) => a.createdTimestamp - b.createdTimestamp
+  );
 
   // Prepare log data as .txt
   let logData = `Match Channel Log: ${channel.name}\n`;
   logData += `Created At: ${channel.createdAt.toISOString()}\n`;
-  logData += `Players: <@${player1id}> (${player1?.displayName || ""})`;
-  logData += `vs <@${player2id}> (${player2?.displayName || ""})\n`;
+  logData += `Players: <${player1id}> (${player1?.displayName}) (${player1?.user.username})`;
+  logData += `vs <${player2id}> (${player2?.displayName}) (${player2?.user.username})\n`;
   logData += `\nMessages:\n\n`;
 
   for (const [, message] of sortedMessages) {
-    logData += `- [${message.createdAt.toISOString()}] ${message.author.id}: ${
-      message.content
-    }\n`;
+    logData += `- [${message.createdAt.toISOString()}] ${
+      message.author.username
+    }: ${message.content}\n`;
   }
 
   // Upload log data to S3

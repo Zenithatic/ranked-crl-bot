@@ -1,17 +1,10 @@
+// Imports
 import {
   ChatInputCommandInteraction,
   PermissionFlagsBits,
   SlashCommandBuilder,
 } from "discord.js";
-import {
-  COOLDOWN_TIMES,
-  CooldownManager,
-} from "../../utils/classes_types/cooldown";
 import { updateUserData } from "../../utils/db/registrationdb";
-import { commandCheck } from "../../utils/functions/interactionchecks";
-
-// Create a cooldown manager for this command with 30-second cooldown
-const cooldown = new CooldownManager(COOLDOWN_TIMES.THIRTY_SECONDS);
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -25,11 +18,9 @@ module.exports = {
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator), // Allow only admins
   async execute(interaction: ChatInputCommandInteraction) {
-    // Check if command is used validly
-    if (!(await commandCheck(interaction, cooldown, true))) return;
     const guild = interaction.guild!;
 
-    // defer
+    // Defer reply to allow more time
     await interaction.deferReply({ ephemeral: true });
 
     const newElo = interaction.options.getNumber("elo") || 1500;
@@ -48,6 +39,7 @@ module.exports = {
         return;
       }
 
+      // Process each verified member
       let successCount = 0;
       let processedCount = 0;
       const verifiedMembers = members.filter((m) =>
@@ -67,7 +59,7 @@ module.exports = {
 
         processedCount++;
 
-        // update progress every 10 users
+        // Update progress every 10 users
         if (processedCount % 10 === 0) {
           await interaction.editReply({
             content: `Updating... ${processedCount}/${totalMembers} users elos processed.`,
@@ -75,7 +67,7 @@ module.exports = {
         }
       }
 
-      // final result
+      // Final result
       await interaction.editReply({
         content: `✅ Updating complete! Successfully updated ${successCount} out of ${totalMembers} users' elos.`,
       });
