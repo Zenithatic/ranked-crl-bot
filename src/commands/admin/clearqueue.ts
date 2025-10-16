@@ -4,7 +4,7 @@ import {
   PermissionFlagsBits,
   SlashCommandBuilder,
 } from "discord.js";
-import { emptyQueue } from "@/src/utils/cache/queuecache";
+import { emptyQueue } from "../../utils/cache/queuecache";
 
 module.exports = {
   data: new SlashCommandBuilder()
