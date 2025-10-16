@@ -12,7 +12,6 @@ import { Player } from "glicko2.ts";
 import { getVerifiedPlayers, setVerifiedPlayers } from "../cache/queuecache";
 import { BattleLog } from "../classes_types/BattleLog";
 import { PlayerData } from "../classes_types/PlayerData";
-import { cards } from "../data/cards";
 
 // Constants and DB client
 const REGION = process.env.AWS_REGION || "us-east-1";
@@ -28,9 +27,14 @@ const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, translateConfig);
  * Initiate registration for a user by player tag and discord ID
  * @param playerTag : - string Player tag without leading #
  * @param discordId : - string Discord ID of the user
+ * @param cards : - array List of card objects
  * @returns null if registration fails or array of card IDs if successful
  */
-async function initiateRegistration(playerTag: string, discordId: string) {
+async function initiateRegistration(
+  playerTag: string,
+  discordId: string,
+  cards: any[]
+) {
   // Check if discordId is already registered (fast check using primary key)
   const existingUser = await getUserData(discordId);
   if (existingUser !== null && existingUser.verified === true) {

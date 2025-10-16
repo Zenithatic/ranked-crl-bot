@@ -17,11 +17,16 @@ module.exports = {
 
     // Validate with Clash Royale API
     const response = await getPlayer(playerTag);
+    const body = await response.json();
 
     // If valid player tag
     if (response.ok) {
       // Generate a deck with cards
-      const cardsCopy = await initiateRegistration(playerTag, userId);
+      const cardsCopy = await initiateRegistration(
+        playerTag,
+        userId,
+        body.cards
+      );
       if (cardsCopy === null) {
         await interaction.reply({
           content:
