@@ -43,11 +43,11 @@ async function logMatchChannel(
     .fetch(player2id)
     .catch(() => null);
 
-  // Fetch channel messages
+  // Fetch channel messages and filter out bot messages
   const messages = await channel.messages.fetch();
-  const sortedMessages = messages.sort(
-    (a, b) => a.createdTimestamp - b.createdTimestamp
-  );
+  const sortedMessages = messages
+    .filter((msg) => !msg.author.bot)
+    .sort((a, b) => a.createdTimestamp - b.createdTimestamp);
 
   // Prepare log data as .txt
   let logData = `Match Channel Log: ${channel.name}\n`;
