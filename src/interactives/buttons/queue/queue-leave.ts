@@ -28,6 +28,11 @@ module.exports = {
         content: `✅ ${result.message}`,
         ephemeral: true,
       });
+      // DM user
+      const user = await interaction.guild!.members.fetch(userId);
+      await user.send({
+        content: `You have been removed from the queue. You will no longer be matched with someone when possible. \n Please use this message as the most accurate reference to your queue status.`,
+      });
     } else {
       await interaction.reply({
         content: `❌ ${result.message}`,
