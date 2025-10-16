@@ -53,7 +53,7 @@ async function logMatchChannel(
   let logData = `Match Channel Log: ${channel.name}\n`;
   logData += `End Type: ${endType}\n`;
   logData += `Created At: ${channel.createdAt.toISOString()}\n`;
-  logData += `Players: <${player1id}> (${player1?.displayName}) (${player1?.user.username})`;
+  logData += `Players: <${player1id}> (${player1?.displayName}) (${player1?.user.username}) `;
   logData += `vs <${player2id}> (${player2?.displayName}) (${player2?.user.username})\n\n`;
   logData += `Battle Log: ${JSON.stringify(battleLog, null, 2)}\n\n`;
   logData += `\nMessages:\n\n`;
