@@ -4,7 +4,7 @@ import {
   PermissionFlagsBits,
   SlashCommandBuilder,
 } from "discord.js";
-import { updateUserData } from "@/src/utils/db/registrationdb";
+import { updateUserData } from "../../utils/db/registrationdb";
 
 module.exports = {
   data: new SlashCommandBuilder()

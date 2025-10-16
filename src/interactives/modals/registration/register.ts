@@ -1,7 +1,7 @@
 // Imports
 import { ModalSubmitInteraction } from "discord.js";
-import { initiateRegistration } from "@/src/utils/db/registrationdb";
-import { getPlayer } from "@/src/utils/data/api";
+import { initiateRegistration } from "../../../utils/db/registrationdb";
+import { getPlayer } from "../../../utils/data/api";
 
 module.exports = {
   customId: "registration-modal",

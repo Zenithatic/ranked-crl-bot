@@ -9,11 +9,11 @@ import {
 import {
   CooldownManager,
   COOLDOWN_TIMES,
-} from "@/src/utils/classes_types/cooldown";
+} from "../../../utils/classes_types/cooldown";
 import {
   buttonCheck,
   btnVerifiedCheck,
-} from "@/src/utils/functions/interactionchecks";
+} from "../../../utils/functions/interactionchecks";
 
 // Create a cooldown manager for this command with one-minute cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);

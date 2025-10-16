@@ -7,8 +7,8 @@ import {
   ButtonBuilder,
   ButtonStyle,
 } from "discord.js";
-import { getUserData, updateUserData } from "@/src/utils/db/registrationdb";
-import { queuePlayer } from "@/src/utils/cache/queuecache";
+import { getUserData, updateUserData } from "../../../utils/db/registrationdb";
+import { queuePlayer } from "../../../utils/cache/queuecache";
 
 const matchChannelCategory = "1421362444382507049";
 // Button row
