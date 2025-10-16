@@ -1,3 +1,4 @@
+// Imports
 import {
   ChannelType,
   ModalSubmitInteraction,
@@ -12,6 +13,7 @@ module.exports = {
   customId: "queue-friendlink-modal",
   async execute(interaction: ModalSubmitInteraction) {
     const userId = interaction.user.id;
+    // Extract friend link from modal input
     const friendLink =
       interaction.fields.getTextInputValue("friend-link-input");
 
@@ -60,7 +62,7 @@ module.exports = {
           return;
         }
 
-        // player tags and elos
+        // Player tags and elos
         const playertag1 = player1data.playerTag;
         const playertag2 = player2data.playerTag;
         const player1elo = player1data.elo;
@@ -72,7 +74,7 @@ module.exports = {
           result.match.discordId
         );
 
-        // create private channel only for the two players to discuss
+        // Create private channel only for the two players to discuss
         const newchannel = await interaction.guild!.channels.create({
           name: `match-${userId}-${result.match.discordId}`,
           type: ChannelType.GuildText,
@@ -80,7 +82,7 @@ module.exports = {
           topic: `time-${Date.now()}`,
         });
 
-        // get Verified role
+        // Get Verified role and Mod role
         const verifiedRole = interaction.guild!.roles.cache.find(
           (role) => role.name === "Verified"
         );
@@ -114,7 +116,7 @@ module.exports = {
             ],
           },
           {
-            id: modRole!.id, // allow mods
+            id: modRole!.id, // Allow mods
             allow: [
               PermissionFlagsBits.ViewChannel,
               PermissionFlagsBits.SendMessages,
@@ -140,18 +142,20 @@ module.exports = {
           content: `<@${userId}>'s friend link: ${player1link}\n\n<@${result.match.discordId}>'s friend link: ${player2link}\n\n`,
         });
 
-        // respond
+        // Respond
         await interaction.reply({
           content: `✅ Match found! You have been paired with <@${result.match.discordId}> (Player Tag: ${result.match.playerTag}). Please coordinate with them to start your match.`,
           ephemeral: true,
         });
       } else {
+        // No match yet, just queued
         await interaction.reply({
           content: `✅ ${result.message}`,
           ephemeral: true,
         });
       }
     } else {
+      // Failure when queueing
       await interaction.reply({
         content: `❌ ${result.message}`,
         ephemeral: true,

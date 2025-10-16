@@ -1,10 +1,5 @@
-import {
-  ActionRowBuilder,
-  ButtonInteraction,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-} from "discord.js";
+// Imports
+import { ButtonInteraction } from "discord.js";
 import {
   CooldownManager,
   COOLDOWN_TIMES,
@@ -64,6 +59,7 @@ module.exports = {
       return;
     }
 
+    // Extract current deck from latest battle
     const playerData = await response.json();
     const currentDeck = playerData[0].team[0].cards.map((card: any) => card.id);
 
@@ -104,8 +100,8 @@ module.exports = {
         content: "✅ Verification successful! Your account is now verified.",
         ephemeral: true,
       });
-      // Optionally, remove the registration deck from DB after successful verification
     } else {
+      // Decks do not match
       await interaction.reply({
         content:
           "❌ Verification failed. Your latest battle does not show that you used the registration deck. Please ensure you have played a classic 1v1 with the deck and try again in a few minutes.",

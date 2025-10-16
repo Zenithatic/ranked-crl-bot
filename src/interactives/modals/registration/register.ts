@@ -1,3 +1,4 @@
+// Imports
 import { ModalSubmitInteraction } from "discord.js";
 import { initiateRegistration } from "../../../utils/db/registrationdb";
 import { getPlayer } from "../../../utils/data/api";
@@ -5,6 +6,7 @@ import { getPlayer } from "../../../utils/data/api";
 module.exports = {
   customId: "registration-modal",
   async execute(interaction: ModalSubmitInteraction) {
+    // Extract user id and player tag from modal input
     const userId = interaction.user.id;
     let playerTag = interaction.fields.getTextInputValue("player-tag-input");
 

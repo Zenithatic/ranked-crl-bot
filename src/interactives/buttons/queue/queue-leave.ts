@@ -1,3 +1,4 @@
+// Imports
 import { ButtonInteraction } from "discord.js";
 import {
   CooldownManager,
@@ -21,6 +22,7 @@ module.exports = {
     // Attempt to unqueue the user
     const result = await unqueuePlayer(userId);
 
+    // Notify user of result
     if (result.success) {
       await interaction.reply({
         content: `✅ ${result.message}`,
