@@ -44,7 +44,7 @@ async function queuePlayer(discordId: string) {
 
   // Check if user is already in queue in sorted set
   const isInQueue = await redis.zscore(
-    "playerQueueStandard",
+    "ranked-crl-player-queue-standard",
     JSON.stringify({ discordId, playerTag: userData.playerTag }) as any
   );
   if (isInQueue) {
@@ -68,7 +68,7 @@ async function queuePlayer(discordId: string) {
 
   // Get all players in the ELO range with their scores
   const potentialMatches = await redis.zrangebyscore(
-    "playerQueueStandard",
+    "ranked-crl-player-queue-standard",
     minElo,
     maxElo,
     "WITHSCORES"
@@ -97,7 +97,10 @@ async function queuePlayer(discordId: string) {
     }
 
     // Remove matched player from queue
-    await redis.zrem("playerQueueStandard", JSON.stringify(closestMatch));
+    await redis.zrem(
+      "ranked-crl-player-queue-standard",
+      JSON.stringify(closestMatch)
+    );
 
     // Update user data to reflect that they are now in a game
     await playerJoinGame(discordId, closestMatch.discordId);
@@ -113,7 +116,7 @@ async function queuePlayer(discordId: string) {
   } else {
     // Store player in sorted set with their ELO as the score, and {discordId, playerTag} as the value
     await redis.zadd(
-      "playerQueueStandard",
+      "ranked-crl-player-queue-standard",
       userElo,
       JSON.stringify({ discordId, playerTag: userData.playerTag } as any)
     );
@@ -172,7 +175,7 @@ async function unqueuePlayer(discordId: string) {
 
   // Remove player from queue
   const removed = await redis.zrem(
-    "playerQueueStandard",
+    "ranked-crl-player-queue-standard",
     JSON.stringify({ discordId, playerTag: userData.playerTag } as any)
   );
   if (removed) {
@@ -191,8 +194,8 @@ async function emptyQueue() {
   if (!redis) {
     throw new Error("Redis client not initialized");
   }
-  const queue = await redis.zrange("playerQueueStandard", 0, -1);
-  await redis.zremrangebyrank("playerQueueStandard", 0, -1);
+  const queue = await redis.zrange("ranked-crl-player-queue-standard", 0, -1);
+  await redis.zremrangebyrank("ranked-crl-player-queue-standard", 0, -1);
   return queue;
 }
 
