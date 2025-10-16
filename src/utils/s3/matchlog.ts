@@ -24,6 +24,7 @@ async function logMatchChannel(channel: TextChannel): Promise<boolean> {
 
   // Fetch player IDs from channel name
   const channelname = channel.name;
+  const channeltime = channel.createdAt.toISOString();
   const player1id = channelname.split("-")[1];
   const player2id = channelname.split("-")[2];
 
@@ -59,7 +60,7 @@ async function logMatchChannel(channel: TextChannel): Promise<boolean> {
     await s3Client.send(
       new PutObjectCommand({
         Bucket: BUCKET_NAME,
-        Key: `${dateFolder}match-${channel.id}-log.txt`,
+        Key: `${dateFolder}${channelname}-${channeltime}-log.txt`,
         Body: logData,
         ContentType: "text/plain",
       })
