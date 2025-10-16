@@ -12,6 +12,7 @@ module.exports = {
     .setDescription("Clear all users from queue.")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator), // Allow only admins
   async execute(interaction: ChatInputCommandInteraction) {
+    // Empty users
     const emptiedUsers = await emptyQueue();
     // Notify users that the queue has been emptied
     for (const user of emptiedUsers) {
