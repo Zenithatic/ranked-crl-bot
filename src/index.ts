@@ -38,7 +38,7 @@ client.once("clientReady", async () => {
     const emptiedUsers = await emptyQueue();
     // Notify users that the queue has been emptied
     for (const user of emptiedUsers) {
-      const id = JSON.parse(user).id;
+      const id = JSON.parse(user).discordId;
       const member = await client.guilds.cache
         .get(process.env.GUILD_ID!)
         ?.members.fetch(id)
