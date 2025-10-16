@@ -3,9 +3,9 @@ import { ButtonInteraction } from "discord.js";
 import {
   CooldownManager,
   COOLDOWN_TIMES,
-} from "../../../utils/classes_types/cooldown";
-import { buttonCheck } from "../../../utils/functions/interactionchecks";
-import { unqueuePlayer } from "../../../utils/cache/queuecache";
+} from "@/src/utils/classes_types/cooldown";
+import { buttonCheck } from "@/src/utils/functions/interactionchecks";
+import { unqueuePlayer } from "@/src/utils/cache/queuecache";
 
 // Create a cooldown manager for this command with thirty-second cooldown
 const cooldown = new CooldownManager(COOLDOWN_TIMES.THIRTY_SECONDS);

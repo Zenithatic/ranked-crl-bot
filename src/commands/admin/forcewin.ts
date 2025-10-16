@@ -2,22 +2,11 @@
 import {
   ChannelType,
   ChatInputCommandInteraction,
-  EmbedBuilder,
   PermissionFlagsBits,
   SlashCommandBuilder,
-  TextChannel,
 } from "discord.js";
-import { Glicko2, Player } from "glicko2.ts";
-import { BattleLog } from "../../utils/classes_types/BattleLog";
-import {
-  getUserData,
-  persistBattleLog,
-  setupGlicko,
-} from "../../utils/db/registrationdb";
-import { logMatchChannel } from "../../utils/s3/matchlog";
-import { handleGameEnd } from "../../utils/functions/handleGameEnd";
-
-const battleLogChannel = "1424129349019242597";
+import { getUserData } from "@/src/utils/db/registrationdb";
+import { handleGameEnd } from "@/src/utils/functions/handleGameEnd";
 
 module.exports = {
   data: new SlashCommandBuilder()

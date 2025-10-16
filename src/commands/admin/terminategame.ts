@@ -1,14 +1,12 @@
 // Imports
+import { getUserData } from "@/src/utils/db/registrationdb";
+import { handleGameEnd } from "@/src/utils/functions/handleGameEnd";
 import {
   ChannelType,
   ChatInputCommandInteraction,
   PermissionFlagsBits,
   SlashCommandBuilder,
-  TextChannel,
 } from "discord.js";
-import { getUserData, updateUserData } from "../../utils/db/registrationdb";
-import { logMatchChannel } from "../../utils/s3/matchlog";
-import { handleGameEnd } from "../../utils/functions/handleGameEnd";
 
 module.exports = {
   data: new SlashCommandBuilder()

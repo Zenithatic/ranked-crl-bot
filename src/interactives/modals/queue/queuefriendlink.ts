@@ -3,12 +3,21 @@ import {
   ChannelType,
   ModalSubmitInteraction,
   PermissionFlagsBits,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } from "discord.js";
-import { getUserData, updateUserData } from "../../../utils/db/registrationdb";
-import { queuePlayer } from "../../../utils/cache/queuecache";
+import { getUserData, updateUserData } from "@/src/utils/db/registrationdb";
+import { queuePlayer } from "@/src/utils/cache/queuecache";
 
 const matchChannelCategory = "1421362444382507049";
-
+// Button row
+const row = new ActionRowBuilder().addComponents(
+  new ButtonBuilder()
+    .setCustomId("finish-game")
+    .setLabel("Finish Game")
+    .setStyle(ButtonStyle.Success)
+);
 module.exports = {
   customId: "queue-friendlink-modal",
   async execute(interaction: ModalSubmitInteraction) {
@@ -140,6 +149,7 @@ module.exports = {
             },
           ],
           content: `<@${userId}>'s friend link: ${player1link}\n\n<@${result.match.discordId}>'s friend link: ${player2link}\n\n`,
+          components: [row.toJSON()],
         });
 
         // Respond

@@ -3,6 +3,7 @@ import {
   ChannelType,
   EmbedBuilder,
   TextChannel,
+  ButtonInteraction,
 } from "discord.js";
 import { Glicko2, Player } from "glicko2.ts";
 import { BattleLog } from "../classes_types/BattleLog";
@@ -31,7 +32,7 @@ async function handleGameEnd(
   winnerId: string,
   loserId: string,
   battles: BattleLog[],
-  interaction: ChatInputCommandInteraction,
+  interaction: ChatInputCommandInteraction | ButtonInteraction,
   endType: "Finished" | "Forced Win" | "Terminated"
 ) {
   // Setup glicko in db for players if not there
