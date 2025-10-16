@@ -17,7 +17,6 @@ type PlayerData = {
   friend_link: string; // Clash Royale friend link
   glicko_rd: number; // Glicko rating deviation
   glicko_vol: number; // Glicko volatility
-  placement_games: number; // number of placement games left
 };
 
 export { PlayerData };

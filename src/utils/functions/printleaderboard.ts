@@ -1,7 +1,14 @@
+// Imports
 import { Client, EmbedBuilder, TextChannel } from "discord.js";
 import { fetchTopPlayers } from "../db/registrationdb";
 
+/**
+ * Prints the leaderboard in the specified channel.
+ * @param client : Discord Bot Client Instance
+ * @returns void
+ */
 async function printLeaderboard(client: Client) {
+  // Fetch channel
   const leaderboardchannelid = "1421366223144226867";
   const channel = client.channels.cache.get(
     leaderboardchannelid
@@ -20,6 +27,7 @@ async function printLeaderboard(client: Client) {
     return;
   }
 
+  // Create embed
   let leaderboardEmbed = new EmbedBuilder()
     .setTitle("🏆 Ranked CRL Leaderboard 🏆")
     .setColor("#FFD700");
@@ -32,7 +40,9 @@ async function printLeaderboard(client: Client) {
   });
   leaderboardEmbed.setDescription(description);
 
+  // Send embed to channel
   await channel.send({ embeds: [leaderboardEmbed] });
 }
 
+// Exports
 export { printLeaderboard };

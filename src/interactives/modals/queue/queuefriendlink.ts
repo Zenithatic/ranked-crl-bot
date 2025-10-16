@@ -3,7 +3,7 @@ import {
   ModalSubmitInteraction,
   PermissionFlagsBits,
 } from "discord.js";
-import { getUserData, setFriendLink } from "../../../utils/db/registrationdb";
+import { getUserData, updateUserData } from "../../../utils/db/registrationdb";
 import { queuePlayer } from "../../../utils/cache/queuecache";
 
 const matchChannelCategory = "1421362444382507049";
@@ -29,7 +29,9 @@ module.exports = {
       }
 
       // Set friend link
-      const res = await setFriendLink(userId, friendLink);
+      const res = await updateUserData(userId, {
+        friend_link: friendLink,
+      });
 
       if (!res) {
         await interaction.reply({

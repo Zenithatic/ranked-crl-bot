@@ -3,7 +3,7 @@ import {
   COOLDOWN_TIMES,
   CooldownManager,
 } from "../../utils/classes_types/cooldown";
-import { setFriendLink } from "../../utils/db/registrationdb";
+import { updateUserData } from "../../utils/db/registrationdb";
 import { commandCheck } from "../../utils/functions/interactionchecks";
 
 const cooldown = new CooldownManager(COOLDOWN_TIMES.ONE_MINUTE);
@@ -43,7 +43,9 @@ module.exports = {
     }
 
     // Set friend link
-    const res = await setFriendLink(userId, friendLink);
+    const res = await updateUserData(userId, {
+      friend_link: friendLink,
+    });
 
     if (!res) {
       await interaction.reply({

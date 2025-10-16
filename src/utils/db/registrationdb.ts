@@ -1,3 +1,4 @@
+// Imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
@@ -8,28 +9,27 @@ import {
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { Player } from "glicko2.ts";
-
 import { getVerifiedPlayers, setVerifiedPlayers } from "../cache/queuecache";
 import { BattleLog } from "../classes_types/BattleLog";
 import { PlayerData } from "../classes_types/PlayerData";
 import { cards } from "../data/cards";
 
+// Constants and DB client
 const REGION = process.env.AWS_REGION || "us-east-1";
 const REGISTRATION_TABLE_NAME = "ranked_crl_registration_table";
-
-// Base client
 const ddbClient = new DynamoDBClient({ region: REGION });
-
-// Minimal safe config
 const marshallOptions = {
   removeUndefinedValues: true, // prevents errors if your objects have undefined fields
 };
-
 const translateConfig = { marshallOptions };
-
-// DocumentClient wrapper (lets you work with plain JS objects)
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, translateConfig);
 
+/**
+ * Initiate registration for a user by player tag and discord ID
+ * @param playerTag : - string Player tag without leading #
+ * @param discordId : - string Discord ID of the user
+ * @returns null if registration fails or array of card IDs if successful
+ */
 async function initiateRegistration(playerTag: string, discordId: string) {
   // Check if discordId is already registered (fast check using primary key)
   const existingUser = await getUserData(discordId);
@@ -99,7 +99,6 @@ async function initiateRegistration(playerTag: string, discordId: string) {
       friend_link: "",
       glicko_rd: 350,
       glicko_vol: 0.06,
-      placement_games: 5,
     },
   };
 
@@ -115,7 +114,13 @@ async function initiateRegistration(playerTag: string, discordId: string) {
   return deckList;
 }
 
+/**
+ * Fetch user data by Discord ID
+ * @param discordId : - string Discord ID of the user
+ * @returns null if user data not found or PlayerData object if found
+ */
 async function getUserData(discordId: string): Promise<PlayerData | null> {
+  // Setup command
   const command = {
     TableName: REGISTRATION_TABLE_NAME,
     Key: {
@@ -123,6 +128,7 @@ async function getUserData(discordId: string): Promise<PlayerData | null> {
     },
   };
 
+  // Execute command and return results
   try {
     const result = await ddbDocClient.send(new GetCommand(command));
     if (result.Item) {
@@ -136,6 +142,11 @@ async function getUserData(discordId: string): Promise<PlayerData | null> {
   }
 }
 
+/**
+ * Initiate a game join request for a player
+ * @param discordId : - string Discord ID of the user
+ * @param opponentId : - string Discord ID of the opponent
+ */
 async function playerJoinGame(discordId: string, opponentId: string) {
   // Update user data to reflect that they are now in a game
   await updateUserData(discordId, {
@@ -145,14 +156,12 @@ async function playerJoinGame(discordId: string, opponentId: string) {
   });
 }
 
-async function setFriendLink(discordId: string, friendLink: string) {
-  const res = await updateUserData(discordId, {
-    friend_link: friendLink,
-  });
-
-  return res;
-}
-
+/**
+ * Update user data with provided fields
+ * @param discordId : - string Discord ID of the user
+ * @param updates : - Partial<PlayerData> Object containing fields to update
+ * @returns boolean indicating success or failure of the update operation
+ */
 async function updateUserData(
   discordId: string,
   updates: Partial<PlayerData>
@@ -167,6 +176,7 @@ async function updateUserData(
     return false;
   }
 
+  // Build update expressions
   const updateExpressions = [];
   const expressionAttributeNames: { [key: string]: string } = {};
   const expressionAttributeValues: { [key: string]: any } = {};
@@ -177,6 +187,7 @@ async function updateUserData(
     expressionAttributeValues[`:${key}`] = cleanUpdates[key];
   }
 
+  // Setup command
   const command = {
     TableName: REGISTRATION_TABLE_NAME,
     Key: {
@@ -187,6 +198,7 @@ async function updateUserData(
     ExpressionAttributeValues: expressionAttributeValues,
   };
 
+  // Execute command and return success status
   try {
     await ddbDocClient.send(new UpdateCommand(command));
     return true;
@@ -196,6 +208,14 @@ async function updateUserData(
   }
 }
 
+/** Persist battle log and update player stats after a game
+ * @param battleLog : - BattleLog[] Array of battle log entries
+ * @param winnerplayer : - Player Glicko2 Player object for the winner
+ * @param loserplayer : - Player Glicko2 Player object for the loser
+ * @param winnerId : - string Discord ID of the winner
+ * @param loserId : - string Discord ID of the loser
+ * @returns boolean indicating success or failure of the persistence operation
+ */
 async function persistBattleLog(
   battleLog: BattleLog[],
   winnerplayer: Player,
@@ -223,14 +243,10 @@ async function persistBattleLog(
     loserpast20 = loserpast20.slice(0, 20);
   }
 
-  let winnerpg = false;
-  if (winnerold.placement_games > 0) {
-    winnerpg = true;
-  }
+  // Update winner data
   const updatewinnerres = await updateUserData(winnerId, {
     current_opponent: "",
     elo: Math.round(Math.max(0, winnerplayer.getRating())),
-    placement_games: winnerpg ? winnerold.placement_games - 1 : 0,
     glicko_rd: winnerplayer.getRd(),
     glicko_vol: winnerplayer.getVol(),
     in_game: false,
@@ -244,14 +260,10 @@ async function persistBattleLog(
     return false;
   }
 
-  let loserpg = false;
-  if (loserold.placement_games > 0) {
-    loserpg = true;
-  }
+  // Update loser data
   const updateloserres = await updateUserData(loserId, {
     current_opponent: undefined,
     elo: Math.round(Math.max(0, loserplayer.getRating())),
-    placement_games: loserpg ? loserold.placement_games - 1 : 0,
     glicko_rd: loserplayer.getRd(),
     glicko_vol: loserplayer.getVol(),
     in_game: false,
@@ -268,10 +280,17 @@ async function persistBattleLog(
   return true;
 }
 
+/**
+ * Get player rank among verified players
+ * @param discordId : - string Discord ID of the user
+ * @returns string representing the player's rank (e.g., "5/100") or "Unranked" if not found
+ */
 async function getPlayerRank(discordId: string): Promise<string> {
+  // Search cache first
   const cachedData = await getVerifiedPlayers();
   let verifiedPlayers;
 
+  // If not in cache, fetch from DB and update cache
   if (cachedData !== "") {
     verifiedPlayers = JSON.parse(cachedData);
   } else {
@@ -288,10 +307,12 @@ async function getPlayerRank(discordId: string): Promise<string> {
     await setVerifiedPlayers(JSON.stringify(verifiedPlayers));
   }
 
+  // If no verified players, return 0/0
   if (verifiedPlayers.length === 0) {
     return "0/0";
   }
 
+  // Sort players by ELO descending and find the index of the specified player
   const sortedPlayers = verifiedPlayers.sort((a: any, b: any) => b.elo - a.elo);
   const playerIndex = sortedPlayers.findIndex(
     (player: any) => player.id === discordId
@@ -304,10 +325,16 @@ async function getPlayerRank(discordId: string): Promise<string> {
   return `${playerIndex + 1}/${sortedPlayers.length}`;
 }
 
+/** Fetch top N players by ELO
+ * @param limit : - number Number of top players to fetch
+ * @returns Array of PlayerData objects for the top players
+ */
 async function fetchTopPlayers(limit: number): Promise<PlayerData[]> {
+  // Search cache first
   const cachedData = await getVerifiedPlayers();
   let verifiedPlayers;
 
+  // If not in cache, fetch from DB and update cache
   if (cachedData !== "") {
     verifiedPlayers = JSON.parse(cachedData);
   } else {
@@ -326,14 +353,20 @@ async function fetchTopPlayers(limit: number): Promise<PlayerData[]> {
     }
   }
 
+  // If no verified players, return empty array
   if (verifiedPlayers.length === 0) {
     return [];
   }
 
+  // Sort players by ELO descending and return top N
   const sortedPlayers = verifiedPlayers.sort((a: any, b: any) => b.elo - a.elo);
   return sortedPlayers.slice(0, limit);
 }
 
+/** Setup Glicko parameters for a user if not already set
+ * @param discordId : - string Discord ID of the user
+ * @returns boolean indicating success or failure of the setup operation
+ */
 async function setupGlicko(discordId: string) {
   const userData = await getUserData(discordId);
 
@@ -349,12 +382,12 @@ async function setupGlicko(discordId: string) {
   const res = await updateUserData(discordId, {
     glicko_rd: 350,
     glicko_vol: 0.06,
-    placement_games: 5,
   });
 
   return res;
 }
 
+// Exports
 export {
   fetchTopPlayers,
   getPlayerRank,
@@ -362,7 +395,6 @@ export {
   initiateRegistration,
   persistBattleLog,
   playerJoinGame,
-  setFriendLink,
   setupGlicko,
   updateUserData,
 };

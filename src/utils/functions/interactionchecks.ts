@@ -1,6 +1,14 @@
+// Imports
 import { ButtonInteraction, ChatInputCommandInteraction } from "discord.js";
 import { CooldownManager } from "../classes_types/cooldown";
 
+/**
+ * Checks if a command interaction is valid (guild, cooldown, verified if required).
+ * @param interaction : - Interaction to check
+ * @param cooldownManager : - Cooldown manager to check
+ * @param requireVerified : - Whether the user needs to be Verified
+ * @returns boolean indicating if the command can proceed
+ */
 async function commandCheck(
   interaction: ChatInputCommandInteraction,
   cooldownManager: CooldownManager,
@@ -50,6 +58,11 @@ async function commandCheck(
   return true;
 }
 
+/**
+ * Checks if a user is verified via roles when using a command.
+ * @param interaction : - Interaction to check
+ * @returns boolean indicating if the command can proceed
+ */
 async function cmdVerifiedCheck(interaction: ChatInputCommandInteraction) {
   // Check if user is already verified via discord roles
   const roles = interaction.member?.roles;
@@ -68,6 +81,13 @@ async function cmdVerifiedCheck(interaction: ChatInputCommandInteraction) {
   return false;
 }
 
+/**
+ * Checks if a button interaction is valid (guild, cooldown, verified if required).
+ * @param interaction : - Interaction to check
+ * @param cooldownManager : - Cooldown manager to check
+ * @param requireVerified : - Whether the user needs to be Verified
+ * @returns boolean indicating if the button can proceed
+ */
 async function buttonCheck(
   interaction: ButtonInteraction,
   cooldownManager: CooldownManager,
@@ -117,6 +137,11 @@ async function buttonCheck(
   return true;
 }
 
+/**
+ * Checks if a user is verified via roles when using a button.
+ * @param interaction : - Interaction to check
+ * @returns boolean indicating if the button can proceed
+ */
 async function btnVerifiedCheck(interaction: ButtonInteraction) {
   // Check if user is already verified via discord roles
   const roles = interaction.member?.roles;
@@ -135,4 +160,5 @@ async function btnVerifiedCheck(interaction: ButtonInteraction) {
   return false;
 }
 
+// Exports
 export { commandCheck, cmdVerifiedCheck, buttonCheck, btnVerifiedCheck };

@@ -8,7 +8,6 @@ import { printLeaderboard } from "./utils/functions/printleaderboard";
 dotenv.config();
 
 // Create a new client instance with necessary intents (basically permissions)
-/* This code snippet is creating a new instance of a Discord client using the `Client` class from the `discord.js` library. The `intents` property is being set to an array of specific gateway intents that the client will subscribe to. These intents define what events the bot will receive from Discord. */
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -120,9 +119,9 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-client.on("messageCreate", (message) => {
-  if (message.content === "!ping") {
-  }
-});
+// Message create event
+// client.on("messageCreate", (message) => {
+//
+// });
 
 client.login(process.env.TOKEN);

@@ -1,7 +1,12 @@
+// Imports
 import fs from "fs";
 import path from "path";
 import { Collection } from "discord.js";
 
+/**
+ * Load all command files from the commands directory.
+ * @returns Collection of commands
+ */
 function loadCommands() {
   const commands = new Collection<string, any>();
   // Load commands from the commands directory
@@ -31,6 +36,10 @@ function loadCommands() {
   return commands;
 }
 
+/**
+ * Load all button files from the buttons directory.
+ * @returns Collection of buttons
+ */
 function loadButtons() {
   const buttons = new Collection<string, any>();
   // Load buttons from the buttons directory
@@ -60,6 +69,10 @@ function loadButtons() {
   return buttons;
 }
 
+/**
+ * Load all modal files from the modals directory.
+ * @returns Collection of modals
+ */
 function loadModals() {
   const modals = new Collection<string, any>();
   // Load modals from the modals directory
@@ -89,4 +102,5 @@ function loadModals() {
   return modals;
 }
 
+// Exports
 export { loadCommands, loadButtons, loadModals };

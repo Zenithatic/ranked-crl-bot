@@ -1,9 +1,12 @@
-// Redis cache functions for player queue
+// Imports
 import Redis from "ioredis";
 import { getUserData, playerJoinGame } from "../db/registrationdb";
 const P = "ranked-crl-valkey-rg.miaymu.ng.0001.use1.cache.amazonaws.com:6379";
 let redis: Redis | undefined = undefined;
 
+/**
+ * Initialize Redis client if not already initialized
+ */
 function initRedis() {
   if (!redis) {
     redis = new Redis(P);
@@ -20,6 +23,11 @@ enum ReturnMessage {
   ALREADY_IN_GAME = "You are currently in a game. Please finish your game before queuing again.",
 }
 
+/**
+ * Adds a player to the queue
+ * @param discordId - The Discord ID of the player
+ * @returns A promise that resolves to a message indicating the result
+ */
 async function queuePlayer(discordId: string) {
   initRedis();
   if (!redis) {
@@ -113,6 +121,10 @@ async function queuePlayer(discordId: string) {
   }
 }
 
+/**
+ * Fetches the list of verified players from Redis
+ * @returns A promise that resolves to the list of verified players
+ */
 async function getVerifiedPlayers() {
   initRedis();
   if (!redis) {
@@ -125,6 +137,10 @@ async function getVerifiedPlayers() {
   return result;
 }
 
+/**
+ * Sets the list of verified players in Redis with a TTL
+ * @param data - The data to store
+ */
 async function setVerifiedPlayers(data: string) {
   initRedis();
   if (!redis) {
@@ -134,6 +150,11 @@ async function setVerifiedPlayers(data: string) {
   await redis.set("ranked-crl-verified-players", data, "EX", ttl);
 }
 
+/**
+ * Removes a player from the queue
+ * @param discordId - The Discord ID of the player
+ * @returns A promise that resolves to a message indicating the result
+ */
 async function unqueuePlayer(discordId: string) {
   initRedis();
   if (!redis) {
@@ -161,6 +182,7 @@ async function unqueuePlayer(discordId: string) {
   }
 }
 
+// Exports
 export {
   ReturnMessage,
   queuePlayer,
